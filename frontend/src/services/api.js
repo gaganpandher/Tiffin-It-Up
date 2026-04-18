@@ -10,7 +10,8 @@ export const parseJwt = (token) => {
   }
 };
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const _baseUrlRaw = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BASE_URL = _baseUrlRaw.replace(/\/+$/, '');
 
 export async function apiRequest(endpoint, options = {}) {
   const token = getAuthToken();
