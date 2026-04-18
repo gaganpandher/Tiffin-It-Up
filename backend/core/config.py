@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    database_url: str = "mysql+pymysql://root:password@localhost:3306/tiffin_db"
+    database_url: str = "sqlite:///./tiffin_db.sqlite"
     secret_key: str = "supersecretkey12345"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
