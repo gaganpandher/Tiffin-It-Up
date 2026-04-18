@@ -3,9 +3,12 @@ services:
     name: tiffin-it-up-fastapi
     env: python
     region: ohio
-    buildCommand: "cd backend && pip install -r requirements.txt"
-    startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.2
       - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY
