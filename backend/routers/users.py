@@ -1,13 +1,35 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 from core.deps import get_current_user, get_current_active_admin, get_current_active_chef, get_current_active_customer
+from core.security import verify_password, get_password_hash
+from database import get_db
+from pydantic import BaseModel
 import models
 import schemas
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
 @router.get("/me", response_model=schemas.UserOut)
 def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not verify_password(payload.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if len(payload.new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+    current_user.hashed_password = get_password_hash(payload.new_password)
+    db.commit()
+    return {"message": "Password updated successfully"}
 
 @router.get("/admin/dashboard")
 def admin_dashboard(current_user: models.User = Depends(get_current_active_admin)):

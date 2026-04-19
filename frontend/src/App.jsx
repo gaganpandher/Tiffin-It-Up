@@ -8,6 +8,7 @@ import ChefProfile from './pages/ChefProfile';
 import ChefOrders from './pages/ChefOrders';
 import ManageMenus from './pages/ManageMenus';
 import ManagePlans from './pages/ManagePlans';
+import ChangePassword from './pages/ChangePassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Route path="orders" element={<ChefOrders />} />
           <Route path="menus" element={<ManageMenus />} />
           <Route path="plans" element={<ManagePlans />} />
+          <Route path="password" element={<ChangePassword />} />
         </Route>
       </Routes>
     </BrowserRouter>
