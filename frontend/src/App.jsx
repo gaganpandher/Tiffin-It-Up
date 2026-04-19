@@ -4,8 +4,11 @@ import AdminLogin from './pages/AdminLogin';
 import Signup from './pages/Signup';
 import ChefLayout from './layouts/ChefLayout';
 import ChefDashboard from './pages/ChefDashboard';
+import ChefProfile from './pages/ChefProfile';
+import ChefOrders from './pages/ChefOrders';
 import ManageMenus from './pages/ManageMenus';
 import ManagePlans from './pages/ManagePlans';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -17,9 +20,15 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         
-        {/* Chef Protected Routes */}
-        <Route path="/chef" element={<ChefLayout />}>
+        {/* Protected Chef Routes */}
+        <Route path="/chef" element={
+          <ProtectedRoute allowedRole="chef">
+            <ChefLayout />
+          </ProtectedRoute>
+        }>
           <Route path="dashboard" element={<ChefDashboard />} />
+          <Route path="profile" element={<ChefProfile />} />
+          <Route path="orders" element={<ChefOrders />} />
           <Route path="menus" element={<ManageMenus />} />
           <Route path="plans" element={<ManagePlans />} />
         </Route>

@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom';
 export default function Sidebar() {
   const links = [
     { name: 'Dashboard', path: '/chef/dashboard', icon: '📊' },
+    { name: 'Store Profile', path: '/chef/profile', icon: '🏪' },
+    { name: 'Live Orders', path: '/chef/orders', icon: '📦' },
     { name: 'Manage Menus', path: '/chef/menus', icon: '🍲' },
     { name: 'Pricing Plans', path: '/chef/plans', icon: '💳' },
   ];

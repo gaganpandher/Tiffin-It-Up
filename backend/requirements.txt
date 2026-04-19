@@ -12,3 +12,4 @@ google-auth>=2.0.0
 requests>=2.30.0
 pymysql>=1.1.0
 psycopg2-binary>=2.9.0
+cloudinary>=1.39.0

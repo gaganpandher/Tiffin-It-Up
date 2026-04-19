@@ -6,6 +6,7 @@ import secrets
 from database import get_db
 import models, schemas
 from core.deps import get_current_active_chef
+from core.cloudinary_upload import upload_image_to_cloudinary
 
 router = APIRouter(prefix="/chef", tags=["Chef"])
 
@@ -26,9 +27,53 @@ def update_chef_profile(profile_in: schemas.ChefProfileBase, db: Session = Depen
         profile = models.ChefProfile(user_id=current_user.id)
         db.add(profile)
     
-    profile.bio = profile_in.bio
-    profile.delivery_available = profile_in.delivery_available
-    profile.base_delivery_price = profile_in.base_delivery_price
+    # Safely transpose values
+    for key, value in profile_in.model_dump().items():
+        setattr(profile, key, value)
+        
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+@router.post("/profile/images", response_model=schemas.ChefProfileOut)
+async def upload_profile_images(
+    profile_picture: Optional[UploadFile] = File(None),
+    cover_image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_chef)
+):
+    profile = db.query(models.ChefProfile).filter(models.ChefProfile.user_id == current_user.id).first()
+    if not profile:
+        profile = models.ChefProfile(user_id=current_user.id)
+        db.add(profile)
+
+    if profile_picture:
+        url = await upload_image_to_cloudinary(profile_picture, folder_name="tiffin_profiles")
+        if url: profile.profile_picture_url = url
+        
+    if cover_image:
+        url = await upload_image_to_cloudinary(cover_image, folder_name="tiffin_covers")
+        if url: profile.cover_image_url = url
+
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+@router.delete("/profile/images", response_model=schemas.ChefProfileOut)
+def delete_profile_images(
+    target: str,  # "avatar", "cover", or "both"
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_chef)
+):
+    profile = db.query(models.ChefProfile).filter(models.ChefProfile.user_id == current_user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    if target in ("avatar", "both"):
+        profile.profile_picture_url = None
+    if target in ("cover", "both"):
+        profile.cover_image_url = None
+
     db.commit()
     db.refresh(profile)
     return profile
@@ -43,30 +88,61 @@ async def create_menu(
     name: str = Form(...),
     description: Optional[str] = Form(None),
     is_active: bool = Form(True),
+    spice_level: int = Form(1),
+    is_veg: bool = Form(True),
+    is_combo: bool = Form(False),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_chef)
 ):
     image_url = None
     if image:
-        ext = image.filename.split('.')[-1]
-        filename = f"{secrets.token_hex(8)}.{ext}"
-        filepath = os.path.join("uploads", filename)
-        with open(filepath, "wb") as buffer:
-            buffer.write(await image.read())
-        image_url = f"/uploads/{filename}"
+        image_url = await upload_image_to_cloudinary(image, folder_name="tiffin_meals")
 
     new_item = models.MenuItem(
         chef_id=current_user.id,
         name=name,
         description=description,
         is_active=is_active,
+        spice_level=spice_level,
+        is_veg=is_veg,
+        is_combo=is_combo,
         image_url=image_url
     )
     db.add(new_item)
     db.commit()
     db.refresh(new_item)
     return new_item
+
+@router.delete("/menus/{menu_id}")
+def delete_menu(menu_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
+    menu_item = db.query(models.MenuItem).filter(models.MenuItem.id == menu_id, models.MenuItem.chef_id == current_user.id).first()
+    if not menu_item:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    
+    db.delete(menu_item)
+    db.commit()
+    return {"message": "Success"}
+
+@router.patch("/menus/{menu_id}/toggle", response_model=schemas.MenuItemOut)
+def toggle_menu_active(menu_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
+    menu_item = db.query(models.MenuItem).filter(models.MenuItem.id == menu_id, models.MenuItem.chef_id == current_user.id).first()
+    if not menu_item:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    menu_item.is_active = not menu_item.is_active
+    db.commit()
+    db.refresh(menu_item)
+    return menu_item
+
+@router.patch("/menus/{menu_id}/toggle", response_model=schemas.MenuItemOut)
+def toggle_menu_active(menu_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
+    menu_item = db.query(models.MenuItem).filter(models.MenuItem.id == menu_id, models.MenuItem.chef_id == current_user.id).first()
+    if not menu_item:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    menu_item.is_active = not menu_item.is_active
+    db.commit()
+    db.refresh(menu_item)
+    return menu_item
 
 @router.get("/plans", response_model=List[schemas.PricingPlanOut])
 def get_plans(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
