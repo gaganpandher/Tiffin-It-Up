@@ -1,79 +1,94 @@
-# Tiffin-It-Up: Scalable Tiffin Service System
+# Tiffin-It-Up: Modern Home-Cooked Meal Marketplace
 
-Tiffin-It-Up is a comprehensive meal delivery platform connecting dedicated chefs/cooks with everyday customers. It employs a modern microservices-influenced architecture, asynchronous task handling, and smart AI/ML predictions to create a seamless end-to-end food subscription experience.
+Tiffin-It-Up is a premium meal delivery platform connecting talented home chefs with customers seeking authentic, home-cooked food. The platform is designed with a high-end "Glassmorphism" aesthetic and robust production-ready architecture.
 
-## Tech Stack Overview
+---
 
-The platform uses a robust, scalable architecture separated into distinct layers:
+## 🚀 Live Production
+- **Frontend**: [tiffin-it-up.vercel.app](https://tiffin-it-up.vercel.app)
+- **Backend API**: [tiffin-it-up.onrender.com/docs](https://tiffin-it-up.onrender.com/docs)
 
-### Backend Architecture
-- **Framework**: Python / FastAPI (High-performance API framework)
-- **Database**: MySQL (currently configured with SQLite `tiffin_db.sqlite` for seamless local Phase 1 testing)
-- **ORM**: SQLAlchemy (Database modeling)
-- **Task Queue**: Celery + Redis (Offloading background tasks like notifications and payment processing) 
-- **Security**: JWT tokens using native `bcrypt` for authentication.
+---
 
-### Frontend Architecture
-- **Framework**: React.js mapped via Vite
-- **Styling**: Tailwind CSS v4 (Custom UI design system)
-- **Routing**: React Router DOM
+## 🛠️ Tech Stack
 
-### DevOps & Infrastructure (Upcoming)
-- **Containerization**: Docker & Docker Compose
+### Frontend
+- **Framework**: React.js 18+ (Vite)
+- **Styling**: Vanilla CSS (Premium Glassmorphism & Micro-animations)
+- **Routing**: React Router DOM v6
+- **Auth**: JWT (JSON Web Tokens) & Google OAuth Provider
 
-## User Roles & Permissions
+### Backend
+- **Framework**: FastAPI (High-performance Python)
+- **Database**: PostgreSQL (Production) / SQLite (Local Development)
+- **ORM**: SQLAlchemy
+- **Media Hosting**: **Cloudinary CDN** (Scalable image storage for meal & profile assets)
+- **Security**: Native `bcrypt` hashing & JWT role-based access control (RBAC)
 
-The system operates across three core role-based access control (RBAC) layers:
+---
 
-### 1. The Admin
-The overarching supervisor of the platform.
-*   **Analytics Dashboard**: Visualizes the total number of registered chefs, active customers, order volumes, etc.
-*   **Moderation**: Ability to permanently block or suspend disruptive customers or underperforming chefs.
+## ✨ Key Features & "Current Scenario"
 
-### 2. The Chef / Cook
-The backbone of the food service.
-*   **Menu Management**: Chefs upload visibility for the food they serve.
-*   **Subscription Models**: Chefs list distinct prices based on a daily, weekly, or monthly subscription model.
-*   **Order Workflows**: Can dynamically Accept or Reject incoming customer orders.
-*   **Delivery Configurations**: Can dictate delivery ranges and apply custom post-delivery pricing factors.
+### 👨‍🍳 Chef Command Center
+- **Interactive Profile Architecture**: Hover-based management for Cover Banners and Avatars using Cloudinary integration.
+- **Dynamic Menu Catalog**: Create/Edit/Delete meals with granular attributes:
+  - 🌶️ Spice Levels (1-5)
+  - 🥦 Veg / 🥩 Non-Veg classifications
+  - 🍱 Combo Deal toggles
+  - 🟢 Live availability toggles (Instant state change without reload)
+- **Live Kitchen Orders**: Real-time order monitoring with internal state transitions: **Pending → Accepted → Delivered**.
+- **Real-time Analytics**: Live tracking of Revenue, Active Meals, and Order volume.
+- **Service Mastery**: Master "Kitchen ON/OFF" switch to control storefront visibility.
 
-### 3. The Customer
-The consumer accessing daily home-cooked foods.
-*   **Ordering Module**: Browse available chefs, select meal plans, and securely process payments.
-*   **Reviews & Trust**: Leave comments and ratings on received meals.
-*   **Notifications**: Recipient of real-time multi-channel notifications matching their order states from chefs.
+### 📱 Responsive Design
+- **Mobile-First Layout**: Sliding sidebars and hamburger menus designed for busy chefs on the go.
+- **Micro-animations**: Smooth transitions, hover overlays, and glassmorphic layers for a premium feel.
 
-## Future Smart Features (AI/ML) & Scaling
-As the platform broadens, these data-driven modules will be introduced:
-1. **Meal Recommendations**: A filtering engine tailored to suggest new cooks/meals based on a customer's prior taste history.
-2. **Demand Scaling & Pricing**: AI-powered dashboard components suggesting optimal dish prices to chefs based on local neighborhood demand.
-3. **Multi-Address Support**: Enabling work and home delivery address toggles dynamically.
-4. **Cancellation System & Live Chat**: Realtime websocket chatting directly bridging Chef ↔ Customer.
+---
 
-## Local Setup Instructions
+## ⚙️ Environment Configuration
 
-### 1. Start the FastAPI Backend
+### Backend (`.env`)
+```env
+DATABASE_URL=postgresql://user:pass@host/db  # Use SQLite locally
+SECRET_KEY=your_secret_key
+CLOUDINARY_CLOUD_NAME=your_name
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+```
+
+### Frontend (`.env`)
+```env
+VITE_API_URL=https://tiffin-it-up.onrender.com
+VITE_GOOGLE_CLIENT_ID=your_google_id
+```
+
+---
+
+## 🛠️ Local Development
+
+### 1. Backend Setup
 ```bash
 cd backend
 python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On Mac/Linux:
-# source venv/bin/activate
-
-pip install -r requirements.txt # (or manually install dependencies in setup)
-python init_db.py # Generates SQLite database for testing
+source venv/bin/activate  # Windows: .\venv\Scripts\activate
+pip install -r requirements.txt
+python init_db.py  # Warning: This drops and recreates tables for schema sync
 uvicorn main:app --reload
 ```
-You can view the Swagger UI endpoints at: `http://127.0.0.1:8000/docs`
 
-### 2. Start the React Frontend
+### 2. Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-You can view the Vite landing app at: `http://localhost:5173/`
 
 ---
-*Built incrementally across phased project tracking.*
+
+## 🚢 Deployment Logic
+- **Frontend**: CI/CD via Vercel (automatically handles SPA routing via `vercel.json`).
+- **Backend**: Hosted on Render. Uses `render.yaml` for Blueprint orchestration and automated database migrations during deployments.
+
+---
+*Built with ❤️ for home-cooks and food lovers.*
