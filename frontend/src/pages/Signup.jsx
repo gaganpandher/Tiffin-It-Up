@@ -48,7 +48,7 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-4 transition-colors">
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-xl overflow-hidden p-8">
-        <h1 className="text-3xl font-bold text-center text-[var(--primary)] mb-2">Tiffin-It-Up</h1>
+        <h1 className="text-3xl font-bold text-center text-[var(--primary)] mb-2">Tiffin It Up</h1>
         <p className="text-gray-500 dark:text-gray-400 text-center mb-8">Create your account to get started</p>
         
         {error && <div className="p-3 mb-4 text-sm text-red-500 bg-red-50 dark:bg-red-900/30 rounded-lg">{error}</div>}
