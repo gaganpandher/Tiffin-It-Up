@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { apiRequest } from '../../services/api';
-import { parseJwt, getAuthToken } from '../../services/api';
+import { 
+  User, 
+  Camera, 
+  Trash2, 
+  Save, 
+  Key, 
+  Eye, 
+  EyeOff, 
+  CheckCircle2, 
+  XCircle 
+} from 'lucide-react';
 
 export default function CustomerProfile() {
   const [profile, setProfile] = useState(null);
@@ -84,83 +94,87 @@ export default function CustomerProfile() {
 
   return (
     <div className="max-w-2xl mx-auto pb-16 space-y-8">
-      <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">My Profile 👤</h2>
+      <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Account Settings</h2>
 
-      {/* Avatar */}
-      <div className="flex items-center gap-6">
-        <div className="relative group cursor-pointer w-24 h-24 shrink-0">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl bg-blue-100">
+      {/* Avatar Section */}
+      <div className="flex items-center gap-8 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+        <div className="relative group cursor-pointer w-28 h-28 shrink-0">
+          <div className="w-full h-full rounded-full overflow-hidden border-4 border-gray-50 dark:border-gray-800 shadow-lg bg-blue-50 dark:bg-blue-900/20">
             {profile?.profile_picture_url
               ? <img src={profile.profile_picture_url} alt="Avatar" className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center text-blue-500 font-extrabold text-3xl">{user?.full_name?.charAt(0) || '?'}</div>
+              : <div className="w-full h-full flex items-center justify-center text-blue-500 font-extrabold text-4xl">{user?.full_name?.charAt(0) || '?'}</div>
             }
             {isUploading && <Spinner />}
           </div>
-          <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-            <button type="button" onClick={() => avatarRef.current?.click()} className="text-white text-xl hover:scale-110 transition-transform" title="Change photo">📷</button>
+          <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
+            <button type="button" onClick={() => avatarRef.current?.click()} className="text-white hover:scale-125 transition-transform" title="Change photo"><Camera size={24} /></button>
             {profile?.profile_picture_url && (
-              <button type="button" onClick={handleDeleteAvatar} className="text-red-300 text-xl hover:scale-110 transition-transform" title="Remove">🗑️</button>
+              <button type="button" onClick={handleDeleteAvatar} className="text-red-400 hover:scale-125 transition-transform" title="Remove"><Trash2 size={24} /></button>
             )}
           </div>
           <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
         </div>
-        <div>
-          <p className="text-xl font-bold dark:text-white">{user?.full_name}</p>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{user?.email}</p>
-          <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{user?.role}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-2xl font-black text-gray-900 dark:text-white truncate">{user?.full_name}</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium mb-3">{user?.email}</p>
+          <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-100 dark:border-blue-800">{user?.role} Account</span>
         </div>
       </div>
 
       {/* Profile Info Form */}
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
-        <h3 className="text-lg font-bold mb-5 dark:text-white">Account Information</h3>
-        <form onSubmit={handleSaveInfo} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-            <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 rounded-xl border border-transparent focus:border-blue-500 outline-none dark:text-white transition-all" />
+      <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm p-8">
+        <h3 className="text-xl font-bold mb-6 dark:text-white flex items-center gap-2">Personal Information</h3>
+        <form onSubmit={handleSaveInfo} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-400 mb-2 ml-1">Legal Full Name</label>
+              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+                className="w-full px-5 py-3 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-transparent focus:border-blue-500 outline-none dark:text-white transition-all font-medium" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-400 mb-2 ml-1">Delivery Address</label>
+              <textarea rows="3" value={address} onChange={e => setAddress(e.target.value)} placeholder="Enter your full home or office address..."
+                className="w-full px-5 py-3 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-transparent focus:border-blue-500 outline-none dark:text-white resize-none transition-all font-medium" />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
-            <input type="email" value={user?.email || ''} disabled
-              className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl dark:text-gray-400 cursor-not-allowed" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Delivery Address</label>
-            <textarea rows="2" value={address} onChange={e => setAddress(e.target.value)} placeholder="Where should meals be delivered?"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 rounded-xl border border-transparent focus:border-blue-500 outline-none dark:text-white resize-none transition-all" />
-          </div>
-          <button type="submit" disabled={isSaving} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all hover:-translate-y-0.5 disabled:opacity-50">
-            {isSaving ? 'Saving...' : 'Save Changes'}
+          <button type="submit" disabled={isSaving} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+            <Save size={20} />
+            {isSaving ? 'Updating...' : 'Save Profile Changes'}
           </button>
         </form>
       </div>
 
       {/* Change Password */}
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
-        <h3 className="text-lg font-bold mb-5 dark:text-white">Change Password 🔑</h3>
-        <form onSubmit={handleChangePassword} className="space-y-4">
+      <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm p-8">
+        <h3 className="text-xl font-bold mb-6 dark:text-white flex items-center gap-2">Security & Privacy</h3>
+        <form onSubmit={handleChangePassword} className="space-y-6">
           {['currentPassword','newPassword','confirmPassword'].map((field, i) => (
             <div key={field}>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-400 mb-2 ml-1">
                 {['Current Password','New Password','Confirm New Password'][i]}
               </label>
               <div className="relative">
                 <input type={show ? 'text' : 'password'} value={[currentPassword,newPassword,confirmPassword][i]}
                   onChange={e => [setCurrentPassword,setNewPassword,setConfirmPassword][i](e.target.value)}
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-950 rounded-xl border border-transparent focus:border-blue-500 outline-none dark:text-white transition-all"
-                  placeholder={['Enter current password','Min 8 characters','Repeat new password'][i]} />
-                {i === 0 && <button type="button" onClick={() => setShow(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">{show ? '🙈' : '👁️'}</button>}
+                  className="w-full px-5 py-3 pr-14 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-transparent focus:border-blue-500 outline-none dark:text-white transition-all font-mono"
+                  placeholder={['••••••••','Min 8 characters','Repeat new password'][i]} />
+                {i === 0 && (
+                  <button type="button" onClick={() => setShow(v => !v)} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors">
+                    {show ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                )}
               </div>
             </div>
           ))}
           {pwdMessage && (
-            <div className={`px-4 py-3 rounded-xl text-sm font-medium ${pwdMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-              {pwdMessage.type === 'success' ? '✅ ' : '❌ '}{pwdMessage.text}
+            <div className={`flex items-center gap-2 px-5 py-3.5 rounded-2xl text-sm font-bold ${pwdMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+              {pwdMessage.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+              {pwdMessage.text}
             </div>
           )}
-          <button type="submit" className="w-full py-3 bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white font-bold rounded-xl transition-all hover:-translate-y-0.5">
-            Update Password
+          <button type="submit" className="w-full py-4 bg-gray-900 hover:bg-black dark:bg-gray-800 dark:hover:bg-gray-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-gray-900/10 hover:-translate-y-1 flex items-center justify-center gap-2">
+            <Key size={20} />
+            Update Access Password
           </button>
         </form>
       </div>

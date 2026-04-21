@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { apiRequest } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Utensils, 
+  Package, 
+  Clock, 
+  DollarSign,
+  ChevronRight
+} from 'lucide-react';
 
 export default function ChefDashboard() {
   const [profile, setProfile] = useState(null);
@@ -42,10 +49,10 @@ export default function ChefDashboard() {
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total_price, 0);
 
   const stats = [
-    { label: 'Active Meals', value: activeMenus, color: 'text-emerald-500', bg: 'from-emerald-50 to-emerged-100 dark:from-emerald-900/20', icon: '🍲', link: '/chef/menus' },
-    { label: 'Total Orders', value: orders.length, color: 'text-blue-500', bg: 'from-blue-50 to-blue-100 dark:from-blue-900/20', icon: '📦', link: '/chef/orders' },
-    { label: 'Pending Orders', value: pendingOrders, color: 'text-yellow-500', bg: 'from-yellow-50 to-yellow-100 dark:from-yellow-900/20', icon: '⏳', link: '/chef/orders' },
-    { label: 'Revenue Earned', value: `$${totalRevenue.toFixed(2)}`, color: 'text-purple-500', bg: 'from-purple-50 to-purple-100 dark:from-purple-900/20', icon: '💰', link: null },
+    { label: 'Active Meals', value: activeMenus, color: 'text-emerald-600 dark:text-emerald-400', icon: <Utensils className="text-emerald-500" />, link: '/chef/menus' },
+    { label: 'Total Orders', value: orders.length, color: 'text-blue-600 dark:text-blue-400', icon: <Package className="text-blue-500" />, link: '/chef/orders' },
+    { label: 'Pending Orders', value: pendingOrders, color: 'text-orange-600 dark:text-orange-400', icon: <Clock className="text-orange-500" />, link: '/chef/orders' },
+    { label: 'Revenue Earned', value: `CA$${totalRevenue.toFixed(2)}`, color: 'text-purple-600 dark:text-purple-400', icon: <DollarSign className="text-purple-500" />, link: null },
   ];
 
   return (
@@ -82,18 +89,22 @@ export default function ChefDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
           <div
             key={stat.label}
             onClick={() => stat.link && navigate(stat.link)}
-            className={`bg-gradient-to-br ${stat.bg} bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 ${stat.link ? 'cursor-pointer hover:-translate-y-1' : ''}`}
+            className={`bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-300 ${
+              stat.link ? 'cursor-pointer hover:border-blue-500/50 hover:shadow-md' : ''
+            }`}
           >
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-3xl">{stat.icon}</span>
-              <p className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                {stat.icon}
+              </div>
+              <p className="text-gray-500 dark:text-gray-400 font-semibold text-sm uppercase tracking-wider">{stat.label}</p>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium text-sm">{stat.label}</p>
+            <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -116,12 +127,12 @@ export default function ChefDashboard() {
                   <p className="text-xs text-gray-500 mt-0.5 capitalize">{order.delivery_type} · {order.time_slot}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-bold text-emerald-600">${order.total_price.toFixed(2)}</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">CA${order.total_price.toFixed(2)}</span>
                   <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
-                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    order.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
-                    order.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                    'bg-red-100 text-red-700'
+                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                    order.status === 'accepted' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                    order.status === 'completed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                    'bg-red-100 text-red-700 border border-red-200'
                   }`}>{order.status}</span>
                 </div>
               </div>

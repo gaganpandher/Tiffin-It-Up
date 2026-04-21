@@ -92,6 +92,8 @@ async def create_menu(
     is_veg: bool = Form(True),
     is_combo: bool = Form(False),
     price: float = Form(0.0),
+    category: models.CategoryEnum = Form(models.CategoryEnum.meal),
+    sub_item_ids: Optional[str] = Form(None), # JSON string or comma-separated
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_chef)
@@ -109,31 +111,78 @@ async def create_menu(
         is_veg=is_veg,
         is_combo=is_combo,
         price=price,
+        category=category,
         image_url=image_url
     )
     db.add(new_item)
+    db.flush() # Get the new_item.id
+
+    if is_combo and sub_item_ids:
+        import json
+        try:
+            ids = json.loads(sub_item_ids)
+            if isinstance(ids, list):
+                for sid in ids:
+                    db.add(models.MenuItemCombo(combo_id=new_item.id, sub_item_id=sid))
+        except: pass
+
     db.commit()
     db.refresh(new_item)
     return new_item
 
-@router.delete("/menus/{menu_id}")
-def delete_menu(menu_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
+@router.put("/menus/{menu_id}", response_model=schemas.MenuItemOut)
+async def update_menu(
+    menu_id: int,
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    is_active: bool = Form(True),
+    spice_level: int = Form(1),
+    is_veg: bool = Form(True),
+    is_combo: bool = Form(False),
+    price: float = Form(0.0),
+    category: models.CategoryEnum = Form(models.CategoryEnum.meal),
+    sub_item_ids: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_chef)
+):
     menu_item = db.query(models.MenuItem).filter(models.MenuItem.id == menu_id, models.MenuItem.chef_id == current_user.id).first()
     if not menu_item:
         raise HTTPException(status_code=404, detail="Meal not found")
     
-    db.delete(menu_item)
-    db.commit()
-    return {"message": "Success"}
+    if image:
+        url = await upload_image_to_cloudinary(image, folder_name="tiffin_meals")
+        if url: menu_item.image_url = url
+    
+    menu_item.name = name
+    menu_item.description = description
+    menu_item.is_active = is_active
+    menu_item.spice_level = spice_level
+    menu_item.is_veg = is_veg
+    menu_item.is_combo = is_combo
+    menu_item.price = price
+    menu_item.category = category
 
-@router.patch("/menus/{menu_id}/toggle", response_model=schemas.MenuItemOut)
-def toggle_menu_active(menu_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
+    # Update combos
+    db.query(models.MenuItemCombo).filter(models.MenuItemCombo.combo_id == menu_id).delete()
+    if is_combo and sub_item_ids:
+        import json
+        try:
+            ids = json.loads(sub_item_ids)
+            if isinstance(ids, list):
+                for sid in ids:
+                    db.add(models.MenuItemCombo(combo_id=menu_id, sub_item_id=sid))
+        except: pass
+
+    db.commit()
+    db.refresh(menu_item)
+    return menu_item
+
+@router.get("/menus/{menu_id}", response_model=schemas.MenuItemOut)
+def get_menu_item(menu_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
     menu_item = db.query(models.MenuItem).filter(models.MenuItem.id == menu_id, models.MenuItem.chef_id == current_user.id).first()
     if not menu_item:
         raise HTTPException(status_code=404, detail="Meal not found")
-    menu_item.is_active = not menu_item.is_active
-    db.commit()
-    db.refresh(menu_item)
     return menu_item
 
 @router.patch("/menus/{menu_id}/toggle", response_model=schemas.MenuItemOut)
