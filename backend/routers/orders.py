@@ -2,32 +2,91 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
-import models, schemas
 from core.deps import get_current_user
+import models, schemas
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
+
+COMBO_DISCOUNT = 0.10  # 10% off total
+
+@router.post("/checkout", response_model=schemas.OrderOut)
+def checkout(
+    payload: schemas.OrderCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != models.RoleEnum.customer:
+        raise HTTPException(status_code=403, detail="Only customers can place orders")
+
+    # Validate all items belong to the stated chef
+    subtotal = 0.0
+    order_items_data = []
+    for item_in in payload.items:
+        menu_item = db.query(models.MenuItem).filter(
+            models.MenuItem.id == item_in.menu_item_id,
+            models.MenuItem.chef_id == payload.chef_id,
+            models.MenuItem.is_active == True
+        ).first()
+        if not menu_item:
+            raise HTTPException(status_code=404, detail=f"Menu item {item_in.menu_item_id} not found or unavailable")
+        line_total = menu_item.price * item_in.quantity
+        subtotal += line_total
+        order_items_data.append((menu_item, item_in.quantity, menu_item.price, item_in.combo_label))
+
+    # Apply 10% combo discount
+    discount = round(subtotal * COMBO_DISCOUNT, 2)
+    total = round(subtotal - discount, 2)
+
+    order = models.Order(
+        customer_id=current_user.id,
+        chef_id=payload.chef_id,
+        total_price=total,
+        discount_applied=discount,
+        delivery_type=payload.delivery_type,
+        time_slot=payload.time_slot,
+    )
+    db.add(order)
+    db.flush()
+
+    for menu_item, qty, unit_price, combo_label in order_items_data:
+        db.add(models.OrderItem(
+            order_id=order.id,
+            menu_item_id=menu_item.id,
+            quantity=qty,
+            unit_price=unit_price,
+            combo_label=combo_label,
+        ))
+
+    db.commit()
+    db.refresh(order)
+    return order
+
+@router.get("/me", response_model=List[schemas.OrderOut])
+def my_orders(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return db.query(models.Order).filter(models.Order.customer_id == current_user.id).order_by(models.Order.id.desc()).all()
 
 @router.get("/chef", response_model=List[schemas.OrderOut])
 def get_chef_orders(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.role != models.RoleEnum.chef:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
-    orders = db.query(models.Order).filter(models.Order.chef_id == current_user.id).order_by(models.Order.id.desc()).all()
-    return orders
+    return db.query(models.Order).filter(models.Order.chef_id == current_user.id).order_by(models.Order.id.desc()).all()
 
 @router.put("/{order_id}/status", response_model=schemas.OrderOut)
-def update_order_status(order_id: int, status_update: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def update_order_status(
+    order_id: int,
+    status_update: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     if current_user.role != models.RoleEnum.chef:
         raise HTTPException(status_code=403, detail="Not authorized")
-        
     order = db.query(models.Order).filter(models.Order.id == order_id, models.Order.chef_id == current_user.id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-        
     try:
         order.status = models.OrderStatusEnum(status_update.lower())
         db.commit()
         db.refresh(order)
         return order
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid order status provided")
+        raise HTTPException(status_code=400, detail="Invalid status")

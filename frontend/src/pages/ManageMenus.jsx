@@ -8,6 +8,7 @@ export default function ManageMenus() {
   const [spiceLevel, setSpiceLevel] = useState(1);
   const [isVeg, setIsVeg] = useState(true);
   const [isCombo, setIsCombo] = useState(false);
+  const [price, setPrice] = useState(0);
   const [image, setImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,6 +30,7 @@ export default function ManageMenus() {
     formData.append('spice_level', spiceLevel);
     formData.append('is_veg', isVeg);
     formData.append('is_combo', isCombo);
+    formData.append('price', price);
     if (image) formData.append('image', image);
 
     try {
@@ -38,6 +40,7 @@ export default function ManageMenus() {
       setSpiceLevel(1);
       setIsVeg(true);
       setIsCombo(false);
+      setPrice(0);
       setImage(null);
       loadMenus();
     } catch (err) {
@@ -89,6 +92,10 @@ export default function ManageMenus() {
           </div>
 
           <div className="space-y-6 bg-gray-50/50 dark:bg-gray-950/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Price (USD $)</label>
+              <input type="number" step="0.50" min="0" value={price} onChange={e=>setPrice(parseFloat(e.target.value)||0)} className="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-emerald-500 rounded-xl dark:text-white transition-all outline-none" placeholder="e.g. 8.50"/>
+            </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Spice Level ({spiceLevel}/5)</label>
               <input type="range" min="1" max="5" value={spiceLevel} onChange={e=>setSpiceLevel(parseInt(e.target.value))} className="w-full accent-emerald-500 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" />
