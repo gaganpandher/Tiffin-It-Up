@@ -91,6 +91,7 @@ async def create_menu(
     spice_level: int = Form(1),
     is_veg: bool = Form(True),
     is_combo: bool = Form(False),
+    price: float = Form(0.0),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_chef)
@@ -107,6 +108,7 @@ async def create_menu(
         spice_level=spice_level,
         is_veg=is_veg,
         is_combo=is_combo,
+        price=price,
         image_url=image_url
     )
     db.add(new_item)

@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Enum, Boolean, Float, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Enum, Boolean, Float, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 import enum
 from database import Base
 
@@ -10,7 +11,6 @@ class RoleEnum(str, enum.Enum):
 
 class User(Base):
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
@@ -31,7 +31,14 @@ class ChefProfile(Base):
     service_active = Column(Boolean, default=True)
     time_slots_delivery = Column(String(500), nullable=True)
     time_slots_pickup = Column(String(500), nullable=True)
+    user = relationship("User")
 
+class CustomerProfile(Base):
+    __tablename__ = "customer_profiles"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    profile_picture_url = Column(String(500), nullable=True)
+    address = Column(Text, nullable=True)
     user = relationship("User")
 
 class MenuItem(Base):
@@ -42,10 +49,10 @@ class MenuItem(Base):
     description = Column(Text, nullable=True)
     image_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=True)
-    spice_level = Column(Integer, default=1) # 1 (mild) to 5 (extreme)
+    spice_level = Column(Integer, default=1)
     is_veg = Column(Boolean, default=True)
     is_combo = Column(Boolean, default=False)
-
+    price = Column(Float, default=0.0)  # USD, set by Chef
     chef = relationship("User")
 
 class PlanTypeEnum(str, enum.Enum):
@@ -60,8 +67,21 @@ class PricingPlan(Base):
     plan_type = Column(Enum(PlanTypeEnum), nullable=False)
     price = Column(Float, nullable=False)
     description = Column(Text, nullable=True)
-
     chef = relationship("User")
+
+class SubscriptionStatusEnum(str, enum.Enum):
+    active = "active"
+    cancelled = "cancelled"
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, ForeignKey("users.id"))
+    plan_id = Column(Integer, ForeignKey("pricing_plans.id"))
+    status = Column(Enum(SubscriptionStatusEnum), default=SubscriptionStatusEnum.active)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    customer = relationship("User", foreign_keys=[customer_id])
+    plan = relationship("PricingPlan")
 
 class OrderStatusEnum(str, enum.Enum):
     pending = "pending"
@@ -76,11 +96,12 @@ class Order(Base):
     chef_id = Column(Integer, ForeignKey("users.id"))
     status = Column(Enum(OrderStatusEnum), default=OrderStatusEnum.pending)
     total_price = Column(Float, default=0.0)
-    delivery_type = Column(String(50)) # 'delivery' or 'pickup'
+    delivery_type = Column(String(50))
     time_slot = Column(String(255))
-    
+    discount_applied = Column(Float, default=0.0)
     customer = relationship("User", foreign_keys=[customer_id])
     chef = relationship("User", foreign_keys=[chef_id])
+    items = relationship("OrderItem", back_populates="order")
 
 class OrderItem(Base):
     __tablename__ = "order_items"
@@ -88,6 +109,7 @@ class OrderItem(Base):
     order_id = Column(Integer, ForeignKey("orders.id"))
     menu_item_id = Column(Integer, ForeignKey("menu_items.id"))
     quantity = Column(Integer, default=1)
-    
-    order = relationship("Order")
+    unit_price = Column(Float, default=0.0)
+    combo_label = Column(String(255), nullable=True)
+    order = relationship("Order", back_populates="items")
     menu_item = relationship("MenuItem")
