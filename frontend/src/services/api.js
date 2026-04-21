@@ -1,6 +1,6 @@
-export const getAuthToken = () => localStorage.getItem('token');
-export const setAuthToken = (token) => localStorage.setItem('token', token);
-export const clearAuthToken = () => localStorage.removeItem('token');
+export const getAuthToken = () => sessionStorage.getItem('token');
+export const setAuthToken = (token) => sessionStorage.setItem('token', token);
+export const clearAuthToken = () => sessionStorage.removeItem('token');
 
 export const parseJwt = (token) => {
   try {

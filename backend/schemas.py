@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
-from models import RoleEnum, PlanTypeEnum, OrderStatusEnum, SubscriptionStatusEnum
+from models import RoleEnum, PlanTypeEnum, OrderStatusEnum, SubscriptionStatusEnum, CategoryEnum
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 class UserCreate(BaseModel):
@@ -71,11 +71,29 @@ class MenuItemCreate(BaseModel):
     is_veg: bool = True
     is_combo: bool = False
     price: float = 0.0
+    category: CategoryEnum = CategoryEnum.meal
+    sub_item_ids: Optional[List[int]] = []
 
-class MenuItemOut(MenuItemCreate):
+class MenuItemOut(BaseModel):
     id: int
     chef_id: int
+    name: str
+    description: Optional[str] = None
     image_url: Optional[str] = None
+    is_active: bool
+    spice_level: int
+    is_veg: bool
+    is_combo: bool
+    price: float
+    category: CategoryEnum
+    sub_items: List["MenuItemShortOut"] = []
+    class Config:
+        from_attributes = True
+
+class MenuItemShortOut(BaseModel):
+    id: int
+    name: str
+    price: float
     class Config:
         from_attributes = True
 
@@ -91,12 +109,16 @@ class MenuItemPublicOut(BaseModel):
     is_veg: bool
     is_combo: bool
     price: float
+    category: CategoryEnum
     chef_name: Optional[str] = None
     chef_avatar: Optional[str] = None
     chef_delivery_available: Optional[bool] = None
     chef_service_active: Optional[bool] = None
+    sub_items: List[MenuItemShortOut] = []
     class Config:
         from_attributes = True
+
+MenuItemOut.model_rebuild()
 
 # ── Pricing Plan ──────────────────────────────────────────────────────────────
 class PricingPlanBase(BaseModel):

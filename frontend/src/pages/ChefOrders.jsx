@@ -62,7 +62,7 @@ export default function ChefOrders() {
               
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="font-semibold text-xl text-emerald-600">${order.total_price.toFixed(2)}</p>
+                  <p className="font-semibold text-xl text-emerald-600 dark:text-emerald-400">CA${order.total_price.toFixed(2)}</p>
                   <p className="text-sm text-gray-500 mt-1">Customer ID: {order.customer_id}</p>
                 </div>
                 

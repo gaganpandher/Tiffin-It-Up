@@ -4,15 +4,15 @@ const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('tiffin_cart')) || []; }
+    try { return JSON.parse(sessionStorage.getItem('tiffin_cart')) || []; }
     catch { return []; }
   });
-  const [cartChefId, setCartChefId] = useState(() => localStorage.getItem('tiffin_cart_chef') || null);
+  const [cartChefId, setCartChefId] = useState(() => sessionStorage.getItem('tiffin_cart_chef') || null);
   const [comboLabel, setComboLabel] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('tiffin_cart', JSON.stringify(cartItems));
-    localStorage.setItem('tiffin_cart_chef', cartChefId || '');
+    sessionStorage.setItem('tiffin_cart', JSON.stringify(cartItems));
+    sessionStorage.setItem('tiffin_cart_chef', cartChefId || '');
   }, [cartItems, cartChefId]);
 
   const addToCart = (item) => {
