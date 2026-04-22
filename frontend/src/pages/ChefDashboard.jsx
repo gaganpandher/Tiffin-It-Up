@@ -64,7 +64,7 @@ export default function ChefDashboard() {
     try {
       const updated = await apiRequest('/chef/profile', {
         method: 'PUT',
-        body: JSON.stringify({ ...profile, service_active: !profile.service_active })
+        body: JSON.stringify({ service_active: !profile.service_active })
       });
       setProfile(updated);
     } catch (err) {

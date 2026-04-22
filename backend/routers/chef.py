@@ -27,8 +27,9 @@ def update_chef_profile(profile_in: schemas.ChefProfileBase, db: Session = Depen
         profile = models.ChefProfile(user_id=current_user.id)
         db.add(profile)
     
-    # Safely transpose values
-    for key, value in profile_in.model_dump().items():
+    # Only update fields provided in the request to avoid overwriting with None
+    update_data = profile_in.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(profile, key, value)
         
     db.commit()
