@@ -20,7 +20,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         email: str = payload.get("email")
         if email is None:
             raise credentials_exception
-        token_data = schemas.TokenData(email=email, role=payload.get("role"))
+        token_data = schemas.TokenData(email=email, roles=payload.get("roles"))
     except JWTError:
         raise credentials_exception
     user = db.query(models.User).filter(models.User.email == token_data.email).first()
@@ -31,16 +31,16 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 def get_current_active_admin(current_user: models.User = Depends(get_current_user)):
-    if current_user.role != models.RoleEnum.admin:
+    if "admin" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Not enough privileges")
     return current_user
 
 def get_current_active_chef(current_user: models.User = Depends(get_current_user)):
-    if current_user.role != models.RoleEnum.chef:
+    if "chef" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Not enough privileges")
     return current_user
 
 def get_current_active_customer(current_user: models.User = Depends(get_current_user)):
-    if current_user.role != models.RoleEnum.customer:
+    if "customer" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Not enough privileges")
     return current_user

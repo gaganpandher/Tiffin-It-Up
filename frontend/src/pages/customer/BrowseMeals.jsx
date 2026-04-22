@@ -10,6 +10,15 @@ export default function BrowseMeals() {
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const { addToCart } = useCart();
+  
+  // Interaction States
+  const [activeChef, setActiveChef] = useState(null);
+  const [showMsgModal, setShowMsgModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [msgContent, setMsgContent] = useState('');
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => { loadMeals(); }, [filters]);
 
@@ -40,6 +49,37 @@ export default function BrowseMeals() {
   };
 
   const setFilter = (key, val) => setFilters(prev => ({ ...prev, [key]: val }));
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!msgContent.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await apiRequest('/feedback/messages', {
+        method: 'POST',
+        body: JSON.stringify({ receiver_id: activeChef.id, content: msgContent })
+      });
+      setToast({ type: 'success', text: 'Message sent!' });
+      setShowMsgModal(false);
+      setMsgContent('');
+    } catch (err) { alert(err.message); }
+    finally { setIsSubmitting(false); }
+  };
+
+  const handleRateKitchen = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await apiRequest('/feedback/reviews', {
+        method: 'POST',
+        body: JSON.stringify({ chef_id: activeChef.id, rating, comment })
+      });
+      setToast({ type: 'success', text: 'Review submitted!' });
+      setShowReviewModal(false);
+      setComment('');
+    } catch (err) { alert(err.message); }
+    finally { setIsSubmitting(false); }
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -139,6 +179,21 @@ export default function BrowseMeals() {
                   <span className="ml-auto text-orange-500 text-sm">{'🌶️'.repeat(meal.spice_level)}</span>
                 </div>
 
+                <div className="flex gap-2 mb-4">
+                  <button 
+                    onClick={() => { setActiveChef({ id: meal.chef_id, name: meal.chef_name }); setShowMsgModal(true); }}
+                    className="flex-1 py-2 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                  >
+                    💬 Message
+                  </button>
+                  <button 
+                    onClick={() => { setActiveChef({ id: meal.chef_id, name: meal.chef_name }); setShowReviewModal(true); }}
+                    className="flex-1 py-2 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all"
+                  >
+                    ⭐ Review
+                  </button>
+                </div>
+
                 <button
                   onClick={() => handleAddToCart(meal)}
                   disabled={!meal.is_active}
@@ -149,6 +204,54 @@ export default function BrowseMeals() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Modals */}
+      {showMsgModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold dark:text-white mb-2">Message {activeChef?.name}</h3>
+            <form onSubmit={handleSendMessage} className="space-y-4">
+              <textarea 
+                required value={msgContent} onChange={e=>setMsgContent(e.target.value)}
+                placeholder="Type your message here..."
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-100 dark:border-gray-800 outline-none dark:text-white"
+                rows="4"
+              />
+              <div className="flex gap-3">
+                <button type="button" onClick={()=>setShowMsgModal(false)} className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold rounded-xl">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="flex-2 px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20">Send Message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showReviewModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold dark:text-white mb-2">Rate {activeChef?.name}'s Kitchen</h3>
+            <form onSubmit={handleRateKitchen} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-500 mb-2">Rating</label>
+                <div className="flex gap-2">
+                  {[1,2,3,4,5].map(s => (
+                    <button key={s} type="button" onClick={()=>setRating(s)} className={`w-10 h-10 rounded-full text-xl transition-all ${rating >= s ? 'grayscale-0 scale-110' : 'grayscale'}`}>⭐</button>
+                  ))}
+                </div>
+              </div>
+              <textarea 
+                value={comment} onChange={e=>setComment(e.target.value)}
+                placeholder="Share your thoughts..."
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-100 dark:border-gray-800 outline-none dark:text-white"
+                rows="3"
+              />
+              <div className="flex gap-3">
+                <button type="button" onClick={()=>setShowReviewModal(false)} className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold rounded-xl">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="flex-2 px-8 py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20">Submit Review</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

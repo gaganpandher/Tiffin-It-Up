@@ -31,6 +31,20 @@ def change_password(
     db.commit()
     return {"message": "Password updated successfully"}
 
+@router.put("/me", response_model=schemas.UserOut)
+def update_user(
+    user_in: schemas.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if user_in.full_name:
+        current_user.full_name = user_in.full_name
+    if user_in.phone_number:
+        current_user.phone_number = user_in.phone_number
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
 @router.get("/admin/dashboard")
 def admin_dashboard(current_user: models.User = Depends(get_current_active_admin)):
     return {"message": "Welcome to the admin dashboard", "user": current_user.email}

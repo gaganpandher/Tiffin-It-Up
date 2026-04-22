@@ -136,16 +136,6 @@ def toggle_menu_active(menu_id: int, db: Session = Depends(get_db), current_user
     db.refresh(menu_item)
     return menu_item
 
-@router.patch("/menus/{menu_id}/toggle", response_model=schemas.MenuItemOut)
-def toggle_menu_active(menu_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
-    menu_item = db.query(models.MenuItem).filter(models.MenuItem.id == menu_id, models.MenuItem.chef_id == current_user.id).first()
-    if not menu_item:
-        raise HTTPException(status_code=404, detail="Meal not found")
-    menu_item.is_active = not menu_item.is_active
-    db.commit()
-    db.refresh(menu_item)
-    return menu_item
-
 @router.get("/plans", response_model=List[schemas.PricingPlanOut])
 def get_plans(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
     plans = db.query(models.PricingPlan).filter(models.PricingPlan.chef_id == current_user.id).all()
@@ -157,9 +147,23 @@ def create_plan(plan_in: schemas.PricingPlanBase, db: Session = Depends(get_db),
         chef_id=current_user.id,
         plan_type=plan_in.plan_type,
         price=plan_in.price,
-        description=plan_in.description
+        description=plan_in.description,
+        is_veg=plan_in.is_veg
     )
     db.add(new_plan)
     db.commit()
     db.refresh(new_plan)
     return new_plan
+
+@router.get("/subscribers", response_model=List[schemas.UserOut])
+def get_subscribers(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
+    # Join Subscriptions with PricingPlans to find customers subscribed to this chef
+    subscribers = db.query(models.User).join(
+        models.Subscription, models.Subscription.customer_id == models.User.id
+    ).join(
+        models.PricingPlan, models.PricingPlan.id == models.Subscription.plan_id
+    ).filter(
+        models.PricingPlan.chef_id == current_user.id,
+        models.Subscription.status == models.SubscriptionStatusEnum.active
+    ).distinct().all()
+    return subscribers

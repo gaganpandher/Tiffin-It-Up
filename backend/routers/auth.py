@@ -26,7 +26,7 @@ def register(user_in: schemas.UserCreate, db: Session = Depends(database.get_db)
         email=user_in.email,
         hashed_password=hashed_password,
         full_name=user_in.full_name,
-        role=user_in.role
+        roles=user_in.roles
     )
     db.add(new_user)
     db.commit()
@@ -45,7 +45,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
-        data={"email": user.email, "role": user.role.value}, expires_delta=access_token_expires
+        data={"email": user.email, "roles": user.roles}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -75,7 +75,7 @@ def google_auth(request: GoogleAuthRequest, db: Session = Depends(database.get_d
                 email=email,
                 hashed_password=hashed_password,
                 full_name=name,
-                role=models.RoleEnum.customer
+                roles="customer"
             )
             db.add(user)
             db.commit()
@@ -84,7 +84,7 @@ def google_auth(request: GoogleAuthRequest, db: Session = Depends(database.get_d
         # Issue JWT mapping just like standard login
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
         access_token = create_access_token(
-            data={"email": user.email, "role": user.role.value}, expires_delta=access_token_expires
+            data={"email": user.email, "roles": user.roles}, expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
     except ValueError:

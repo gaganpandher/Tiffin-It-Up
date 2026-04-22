@@ -78,6 +78,7 @@ def browse_plans(db: Session = Depends(get_db)):
             plan_type=plan.plan_type,
             price=plan.price,
             description=plan.description,
+            is_veg=plan.is_veg,
             chef_name=plan.chef.full_name if plan.chef else None,
             chef_avatar=chef_profile.profile_picture_url if chef_profile else None,
         ))
@@ -98,8 +99,17 @@ def subscribe_to_plan(
         models.Subscription.plan_id == payload.plan_id,
         models.Subscription.status == models.SubscriptionStatusEnum.active
     ).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Already subscribed to this plan")
+    # Check for plan type constraints: Weekly or Monthly but not both per chef
+    if plan.plan_type in [models.PlanTypeEnum.weekly, models.PlanTypeEnum.monthly]:
+        other_type = models.PlanTypeEnum.monthly if plan.plan_type == models.PlanTypeEnum.weekly else models.PlanTypeEnum.weekly
+        existing_conflict = db.query(models.Subscription).join(models.PricingPlan).filter(
+            models.Subscription.customer_id == current_user.id,
+            models.PricingPlan.chef_id == plan.chef_id,
+            models.PricingPlan.plan_type == other_type,
+            models.Subscription.status == models.SubscriptionStatusEnum.active
+        ).first()
+        if existing_conflict:
+            raise HTTPException(status_code=400, detail=f"You already have an active {other_type.value} plan with this kitchen. Please cancel it first.")
 
     sub = models.Subscription(customer_id=current_user.id, plan_id=payload.plan_id)
     db.add(sub)

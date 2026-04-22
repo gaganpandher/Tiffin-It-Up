@@ -9,17 +9,47 @@ export default function ChefDashboard() {
   const [isToggling, setIsToggling] = useState(false);
   const navigate = useNavigate();
 
+  const [subscribers, setSubscribers] = useState([]);
+  const [notification, setNotification] = useState(null);
+
   useEffect(() => {
     Promise.all([
       apiRequest('/chef/profile'),
       apiRequest('/chef/menus'),
       apiRequest('/orders/chef'),
-    ]).then(([profileData, menuData, orderData]) => {
+      apiRequest('/chef/subscribers'),
+    ]).then(([profileData, menuData, orderData, subData]) => {
       setProfile(profileData);
       setMenus(menuData);
       setOrders(orderData);
+      setSubscribers(subData);
     }).catch(console.error);
+
+    // WebSocket Notifications
+    const token = localStorage.getItem('token');
+    const user = token ? JSON.parse(atob(token.split('.')[1])) : null;
+    if (user) {
+      const wsUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace('http', 'ws');
+      const socket = new WebSocket(`${wsUrl}/ws/notifications/${user.id}`);
+      
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'NEW_ORDER') {
+          setNotification(data);
+          playNotificationSound();
+          // Refresh orders
+          apiRequest('/orders/chef').then(setOrders).catch(console.error);
+        }
+      };
+
+      return () => socket.close();
+    }
   }, []);
+
+  const playNotificationSound = () => {
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    audio.play().catch(e => console.error("Sound play failed:", e));
+  };
 
   const handleToggleService = async () => {
     if (!profile) return;
@@ -98,36 +128,80 @@ export default function ChefDashboard() {
         ))}
       </div>
 
-      {/* Recent Orders Preview */}
-      <div className="bg-white/80 backdrop-blur-md dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Orders</h3>
-          <button onClick={() => navigate('/chef/orders')} className="text-sm font-semibold text-blue-600 hover:underline">View All →</button>
+      {/* Notification Popup */}
+      {notification && (
+        <div className="fixed top-6 right-6 z-50 bg-white dark:bg-gray-900 border-2 border-emerald-500 rounded-3xl shadow-2xl p-6 max-w-sm animate-bounce">
+          <div className="flex items-center gap-4">
+            <span className="text-4xl">🔔</span>
+            <div>
+              <p className="font-extrabold text-lg text-gray-900 dark:text-white">New Order!</p>
+              <p className="text-sm text-gray-500">{notification.customer_name} just placed an order.</p>
+            </div>
+            <button onClick={() => setNotification(null)} className="ml-auto text-gray-400 hover:text-gray-600">✕</button>
+          </div>
+          <button 
+            onClick={() => { setNotification(null); navigate('/chef/orders'); }}
+            className="w-full mt-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors"
+          >
+            View Order
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Orders Preview */}
+        <div className="lg:col-span-2 bg-white/80 backdrop-blur-md dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Orders</h3>
+            <button onClick={() => navigate('/chef/orders')} className="text-sm font-semibold text-blue-600 hover:underline">View All →</button>
+          </div>
+
+          {orders.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No orders yet. Share your chef link to get started!</p>
+          ) : (
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {orders.slice(0, 5).map(order => (
+                <div key={order.id} className="flex justify-between items-center py-4">
+                  <div>
+                    <p className="font-semibold text-gray-800 dark:text-white">Order #{order.id}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 capitalize">{order.delivery_type} · {order.time_slot}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="font-bold text-emerald-600">${order.total_price.toFixed(2)}</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
+                      order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                      order.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                      order.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>{order.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {orders.length === 0 ? (
-          <p className="text-gray-400 text-center py-8">No orders yet. Share your chef link to get started!</p>
-        ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            {orders.slice(0, 5).map(order => (
-              <div key={order.id} className="flex justify-between items-center py-4">
-                <div>
-                  <p className="font-semibold text-gray-800 dark:text-white">Order #{order.id}</p>
-                  <p className="text-xs text-gray-500 mt-0.5 capitalize">{order.delivery_type} · {order.time_slot}</p>
+        {/* Subscribers Section */}
+        <div className="bg-white/80 backdrop-blur-md dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Active Subscribers</h3>
+          {subscribers.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No subscribers yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {subscribers.map(sub => (
+                <div key={sub.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-800">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
+                    {sub.full_name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900 dark:text-white text-sm">{sub.full_name}</p>
+                    <p className="text-xs text-gray-500">{sub.email}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-bold text-emerald-600">${order.total_price.toFixed(2)}</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
-                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    order.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
-                    order.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>{order.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    role: RoleEnum = RoleEnum.customer
+    roles: str = "customer"
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -19,19 +19,21 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
-    role: Optional[RoleEnum] = None
+    roles: Optional[str] = None
 
 class UserOut(BaseModel):
     id: int
     email: EmailStr
     full_name: str
-    role: RoleEnum
+    roles: str
+    phone_number: Optional[str] = None
     is_active: bool
     class Config:
         from_attributes = True
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
+    phone_number: Optional[str] = None
 
 # ── Chef Profile ──────────────────────────────────────────────────────────────
 class ChefProfileBase(BaseModel):
@@ -103,6 +105,7 @@ class PricingPlanBase(BaseModel):
     plan_type: PlanTypeEnum
     price: float
     description: Optional[str] = None
+    is_veg: bool = True
 
 class PricingPlanOut(PricingPlanBase):
     id: int
@@ -161,5 +164,32 @@ class OrderOut(BaseModel):
     delivery_type: str
     time_slot: str
     items: List[OrderItemOut] = []
+    class Config:
+        from_attributes = True
+
+# ── Feedback & Messaging ──────────────────────────────────────────────────────
+class ReviewCreate(BaseModel):
+    chef_id: int
+    rating: int
+    comment: Optional[str] = None
+
+class ReviewOut(ReviewCreate):
+    id: int
+    customer_id: int
+    created_at: str # will be formatted
+    customer_name: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class MessageCreate(BaseModel):
+    receiver_id: int
+    content: str
+
+class MessageOut(MessageCreate):
+    id: int
+    sender_id: int
+    is_read: bool
+    created_at: str
+    sender_name: Optional[str] = None
     class Config:
         from_attributes = True

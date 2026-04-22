@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../../services/api';
 
 const PLAN_ICONS = { daily: '☀️', weekly: '📅', monthly: '🗓️' };
@@ -8,6 +9,7 @@ export default function Subscriptions() {
   const [plans, setPlans] = useState([]);
   const [mySubscriptions, setMySubscriptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => { loadAll(); }, []);
 
@@ -23,11 +25,8 @@ export default function Subscriptions() {
     finally { setIsLoading(false); }
   };
 
-  const handleSubscribe = async (planId) => {
-    try {
-      await apiRequest('/marketplace/subscribe', { method: 'POST', body: JSON.stringify({ plan_id: planId }) });
-      await loadAll();
-    } catch (err) { alert(err.message); }
+  const handleSubscribe = (planId) => {
+    navigate(`/customer/checkout/subscription?plan_id=${planId}`);
   };
 
   const handleCancel = async (subId) => {

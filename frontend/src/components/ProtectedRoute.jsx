@@ -7,7 +7,7 @@ export default function ProtectedRoute({ children, allowedRole }) {
 
   if (allowedRole) {
     const payload = parseJwt(token);
-    if (!payload || payload.role !== allowedRole) {
+    if (!payload || !payload.roles.split(',').includes(allowedRole)) {
       return <Navigate to="/login" replace />;
     }
   }

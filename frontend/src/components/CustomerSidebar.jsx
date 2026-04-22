@@ -13,6 +13,11 @@ export default function CustomerSidebar({ isOpen, onClose }) {
     { name: 'My Profile',      path: '/customer/profile',   icon: '👤' },
   ];
 
+  const token = localStorage.getItem('token');
+  const user = token ? JSON.parse(atob(token.split('.')[1])) : null;
+  const roles = user?.roles?.split(',') || [];
+  const hasBothRoles = roles.includes('chef') && roles.includes('customer');
+
   return (
     <>
       {isOpen && (
@@ -53,7 +58,15 @@ export default function CustomerSidebar({ isOpen, onClose }) {
             </NavLink>
           ))}
         </nav>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+          {hasBothRoles && (
+            <button
+              onClick={() => navigate('/chef/dashboard')}
+              className="w-full py-2 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors font-bold text-sm flex items-center justify-center gap-2"
+            >
+              🔄 Switch to Chef Mode
+            </button>
+          )}
           <button
             onClick={() => { localStorage.removeItem('token'); navigate('/'); }}
             className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium"

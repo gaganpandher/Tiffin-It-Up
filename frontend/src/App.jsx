@@ -19,6 +19,7 @@ import BrowseMeals from './pages/customer/BrowseMeals';
 import Cart from './pages/customer/Cart';
 import MyOrders from './pages/customer/MyOrders';
 import Subscriptions from './pages/customer/Subscriptions';
+import SubscriptionCheckout from './pages/customer/SubscriptionCheckout';
 import CustomerProfile from './pages/customer/CustomerProfile';
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
           <Route path="cart"          element={<Cart />} />
           <Route path="orders"        element={<MyOrders />} />
           <Route path="subscriptions" element={<Subscriptions />} />
+          <Route path="checkout/subscription" element={<SubscriptionCheckout />} />
           <Route path="profile"       element={<CustomerProfile />} />
         </Route>
       </Routes>

@@ -9,6 +9,7 @@ export default function CustomerProfile() {
   const [address, setAddress] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [phone, setPhone] = useState('');
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -27,6 +28,7 @@ export default function CustomerProfile() {
       setProfile(p);
       setFullName(u.full_name || '');
       setAddress(p.address || '');
+      setPhone(u.phone_number || '');
     }).catch(console.error);
   }, []);
 
@@ -35,7 +37,7 @@ export default function CustomerProfile() {
     setIsSaving(true);
     try {
       await apiRequest('/customer/profile', { method: 'PUT', body: JSON.stringify({ address }) });
-      await apiRequest('/users/me', { method: 'PUT', body: JSON.stringify({ full_name: fullName }) }).catch(() => {});
+      await apiRequest('/users/me', { method: 'PUT', body: JSON.stringify({ full_name: fullName, phone_number: phone }) }).catch(() => {});
       alert('Profile updated!');
     } catch (err) { alert(err.message); }
     finally { setIsSaving(false); }
@@ -124,6 +126,11 @@ export default function CustomerProfile() {
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
             <input type="email" value={user?.email || ''} disabled
               className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl dark:text-gray-400 cursor-not-allowed" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+            <input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (555) 000-0000"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 rounded-xl border border-transparent focus:border-blue-500 outline-none dark:text-white transition-all" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Delivery Address</label>

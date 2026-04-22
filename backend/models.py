@@ -15,7 +15,8 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255))
-    role = Column(Enum(RoleEnum), default=RoleEnum.customer, nullable=False)
+    roles = Column(String(255), default="customer", nullable=False) # Comma-separated roles
+    phone_number = Column(String(50), nullable=True)
     is_active = Column(Boolean, default=True)
 
 class ChefProfile(Base):
@@ -67,6 +68,7 @@ class PricingPlan(Base):
     plan_type = Column(Enum(PlanTypeEnum), nullable=False)
     price = Column(Float, nullable=False)
     description = Column(Text, nullable=True)
+    is_veg = Column(Boolean, default=True) # Point 2
     chef = relationship("User")
 
 class SubscriptionStatusEnum(str, enum.Enum):
@@ -113,3 +115,26 @@ class OrderItem(Base):
     combo_label = Column(String(255), nullable=True)
     order = relationship("Order", back_populates="items")
     menu_item = relationship("MenuItem")
+
+class Review(Base):
+    __tablename__ = "reviews"
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, ForeignKey("users.id"))
+    chef_id = Column(Integer, ForeignKey("users.id"))
+    rating = Column(Integer, nullable=False)
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    customer = relationship("User", foreign_keys=[customer_id])
+    chef = relationship("User", foreign_keys=[chef_id])
+
+class Message(Base):
+    __tablename__ = "messages"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    receiver_id = Column(Integer, ForeignKey("users.id"))
+    content = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    sender = relationship("User", foreign_keys=[sender_id])
+    receiver = relationship("User", foreign_keys=[receiver_id])
+

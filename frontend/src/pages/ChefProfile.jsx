@@ -11,6 +11,7 @@ export default function ChefProfile() {
   const [timeSlotsPickup, setTimeSlotsPickup] = useState('');
   const [isUploading, setIsUploading] = useState(null); // 'avatar' | 'cover' | null
   const [isSaving, setIsSaving] = useState(false);
+  const [phone, setPhone] = useState('');
 
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
@@ -28,14 +29,18 @@ export default function ChefProfile() {
 
   const loadProfile = async () => {
     try {
-      const data = await apiRequest('/chef/profile');
-      setProfile(data);
-      setBio(data.bio || '');
-      setPickupAddress(data.pickup_address || '');
-      setDeliveryAvailable(data.delivery_available);
-      setBaseDeliveryPrice(data.base_delivery_price || 0);
-      setTimeSlotsDelivery(data.time_slots_delivery || '');
-      setTimeSlotsPickup(data.time_slots_pickup || '');
+      const [pData, uData] = await Promise.all([
+        apiRequest('/chef/profile'),
+        apiRequest('/users/me')
+      ]);
+      setProfile(pData);
+      setBio(pData.bio || '');
+      setPickupAddress(pData.pickup_address || '');
+      setDeliveryAvailable(pData.delivery_available);
+      setBaseDeliveryPrice(pData.base_delivery_price || 0);
+      setTimeSlotsDelivery(pData.time_slots_delivery || '');
+      setTimeSlotsPickup(pData.time_slots_pickup || '');
+      setPhone(uData.phone_number || '');
     } catch (err) {
       console.error(err);
     }
@@ -94,6 +99,10 @@ export default function ChefProfile() {
           time_slots_pickup: timeSlotsPickup,
           service_active: profile?.service_active ?? true,
         }),
+      });
+      await apiRequest('/users/me', {
+        method: 'PUT',
+        body: JSON.stringify({ phone_number: phone })
       });
       alert('Profile saved!');
     } catch (err) {
@@ -209,8 +218,21 @@ export default function ChefProfile() {
         )}
       </div>
 
+      {/* ── Contact Details ─────────────────────────────────────────── */}
+      <div className="bg-white/80 backdrop-blur-md dark:bg-gray-900/80 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <h3 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Contact Details</h3>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+          <input
+            type="text" value={phone} onChange={e => setPhone(e.target.value)}
+            placeholder="+1 (555) 000-0000"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 border border-transparent focus:border-emerald-500 rounded-xl dark:text-white outline-none transition-all"
+          />
+        </div>
+      </div>
+
       {/* ── Config Form ──────────────────────────────────────────────── */}
-      <div className="pt-10 bg-white/80 backdrop-blur-md dark:bg-gray-900/80 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <div className="bg-white/80 backdrop-blur-md dark:bg-gray-900/80 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
         <h3 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Operations Config</h3>
         <form onSubmit={handleSave} className="space-y-5">
 

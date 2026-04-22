@@ -4,6 +4,7 @@ from typing import List
 from database import get_db
 from core.deps import get_current_user
 import models, schemas
+from routers.notifications import manager
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -59,6 +60,14 @@ def checkout(
 
     db.commit()
     db.refresh(order)
+
+    # Trigger notification to chef
+    import asyncio
+    asyncio.create_task(manager.send_personal_message(
+        {"type": "NEW_ORDER", "order_id": order.id, "customer_name": current_user.full_name},
+        payload.chef_id
+    ))
+
     return order
 
 @router.get("/me", response_model=List[schemas.OrderOut])

@@ -18,6 +18,11 @@ export default function Sidebar({ isOpen, onClose }) {
     navigate('/');
   };
 
+  const token = localStorage.getItem('token');
+  const user = token ? JSON.parse(atob(token.split('.')[1])) : null;
+  const roles = user?.roles?.split(',') || [];
+  const hasBothRoles = roles.includes('chef') && roles.includes('customer');
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -67,7 +72,15 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+          {hasBothRoles && (
+            <button
+              onClick={() => navigate('/customer/dashboard')}
+              className="w-full py-2 px-4 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors font-bold text-sm flex items-center justify-center gap-2"
+            >
+              🔄 Switch to Customer Mode
+            </button>
+          )}
           <button
             onClick={handleLogout}
             className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium"
