@@ -19,9 +19,10 @@ export default function Auth() {
       setAuthToken(res.access_token);
       
       const payload = parseJwt(res.access_token);
-      if (payload && payload.role === 'customer') {
+      const roles = payload?.roles?.split(',') || [];
+      if (roles.includes('customer')) {
         navigate('/customer/dashboard');
-      } else if (payload && payload.role === 'chef') {
+      } else if (roles.includes('chef')) {
         navigate('/chef/dashboard');
       } else {
         navigate('/');
@@ -46,9 +47,10 @@ export default function Auth() {
       setAuthToken(res.access_token);
       
       const payload = parseJwt(res.access_token);
-      if (payload && payload.role === 'customer') {
+      const roles = payload?.roles?.split(',') || [];
+      if (roles.includes('customer')) {
         navigate('/customer/dashboard');
-      } else if (payload && payload.role === 'chef') {
+      } else if (roles.includes('chef')) {
         navigate('/chef/dashboard');
       } else {
         navigate('/');

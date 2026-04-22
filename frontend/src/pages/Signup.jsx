@@ -35,7 +35,7 @@ export default function Signup() {
           email: email,
           password: password,
           full_name: fullName,
-          role: role
+          roles: role
         })
       });
       // Auto-login after registration
@@ -50,10 +50,11 @@ export default function Signup() {
 
       setAuthToken(loginRes.access_token);
       const payload = parseJwt(loginRes.access_token);
+      const roles = payload?.roles?.split(',') || [];
       
-      if (payload && payload.role === 'customer') {
+      if (roles.includes('customer')) {
         navigate('/customer/dashboard');
-      } else if (payload && payload.role === 'chef') {
+      } else if (roles.includes('chef')) {
         navigate('/chef/dashboard');
       } else {
         navigate('/');

@@ -27,7 +27,7 @@ export default function Sidebar({ isOpen, onClose }) {
     navigate('/');
   };
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const user = token ? JSON.parse(atob(token.split('.')[1])) : null;
   const roles = user?.roles?.split(',') || [];
   const hasBothRoles = roles.includes('chef') && roles.includes('customer');

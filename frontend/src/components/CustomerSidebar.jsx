@@ -21,7 +21,7 @@ export default function CustomerSidebar({ isOpen, onClose }) {
     { name: 'My Profile',      path: '/customer/profile',       icon: <User size={20} /> },
   ];
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const user = token ? JSON.parse(atob(token.split('.')[1])) : null;
   const roles = user?.roles?.split(',') || [];
   const hasBothRoles = roles.includes('chef') && roles.includes('customer');

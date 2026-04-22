@@ -33,7 +33,7 @@ export default function ChefDashboard() {
     }).catch(console.error);
 
     // WebSocket Notifications
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const user = token ? JSON.parse(atob(token.split('.')[1])) : null;
     if (user) {
       const wsUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace('http', 'ws');
