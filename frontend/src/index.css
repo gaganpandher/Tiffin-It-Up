@@ -10,3 +10,26 @@ body {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   background-color: #f9fafb;
 }
+
+/* Dark mode input fixes for autofill and typing */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark textarea:-webkit-autofill,
+.dark textarea:-webkit-autofill:hover,
+.dark textarea:-webkit-autofill:focus,
+.dark select:-webkit-autofill,
+.dark select:-webkit-autofill:hover,
+.dark select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #030712 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input {
+  color-scheme: dark;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+}

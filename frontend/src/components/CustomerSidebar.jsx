@@ -1,16 +1,24 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { 
+  Search, 
+  ShoppingCart, 
+  Package, 
+  CalendarDays, 
+  User, 
+  LogOut 
+} from 'lucide-react';
 
 export default function CustomerSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { itemCount } = useCart();
 
   const links = [
-    { name: 'Browse Meals',    path: '/customer/dashboard', icon: '🍽️' },
-    { name: 'My Cart',         path: '/customer/cart',      icon: '🛒', badge: itemCount },
-    { name: 'My Orders',       path: '/customer/orders',    icon: '📦' },
-    { name: 'Subscriptions',   path: '/customer/subscriptions', icon: '📅' },
-    { name: 'My Profile',      path: '/customer/profile',   icon: '👤' },
+    { name: 'Browse Meals',    path: '/customer/dashboard',     icon: <Search size={20} /> },
+    { name: 'My Cart',         path: '/customer/cart',          icon: <ShoppingCart size={20} />, badge: itemCount },
+    { name: 'My Orders',       path: '/customer/orders',        icon: <Package size={20} /> },
+    { name: 'Subscriptions',   path: '/customer/subscriptions', icon: <CalendarDays size={20} /> },
+    { name: 'My Profile',      path: '/customer/profile',       icon: <User size={20} /> },
   ];
 
   const token = localStorage.getItem('token');
@@ -32,8 +40,8 @@ export default function CustomerSidebar({ isOpen, onClose }) {
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-blue-500">Tiffin It Up</h2>
-          <button onClick={onClose} className="md:hidden text-gray-400 hover:text-gray-600 text-2xl">✕</button>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tiffin It Up</h2>
+          <button onClick={onClose} className="md:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl">✕</button>
         </div>
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
           {links.map(link => (
@@ -68,9 +76,12 @@ export default function CustomerSidebar({ isOpen, onClose }) {
             </button>
           )}
           <button
-            onClick={() => { localStorage.removeItem('token'); navigate('/'); }}
-            className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium"
-          >Logout</button>
+            onClick={() => { sessionStorage.removeItem('token'); navigate('/'); }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl transition-colors font-semibold shadow-sm"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
       </aside>
     </>

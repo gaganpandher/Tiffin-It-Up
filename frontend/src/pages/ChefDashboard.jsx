@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { apiRequest } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import {
+  Utensils,
+  Package,
+  Clock,
+  DollarSign,
+  ChevronRight
+} from 'lucide-react';
 
 export default function ChefDashboard() {
   const [profile, setProfile] = useState(null);
@@ -31,7 +38,7 @@ export default function ChefDashboard() {
     if (user) {
       const wsUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace('http', 'ws');
       const socket = new WebSocket(`${wsUrl}/ws/notifications/${user.id}`);
-      
+
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === 'NEW_ORDER') {
@@ -72,10 +79,10 @@ export default function ChefDashboard() {
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total_price, 0);
 
   const stats = [
-    { label: 'Active Meals', value: activeMenus, color: 'text-emerald-500', bg: 'from-emerald-50 to-emerged-100 dark:from-emerald-900/20', icon: '🍲', link: '/chef/menus' },
-    { label: 'Total Orders', value: orders.length, color: 'text-blue-500', bg: 'from-blue-50 to-blue-100 dark:from-blue-900/20', icon: '📦', link: '/chef/orders' },
-    { label: 'Pending Orders', value: pendingOrders, color: 'text-yellow-500', bg: 'from-yellow-50 to-yellow-100 dark:from-yellow-900/20', icon: '⏳', link: '/chef/orders' },
-    { label: 'Revenue Earned', value: `$${totalRevenue.toFixed(2)}`, color: 'text-purple-500', bg: 'from-purple-50 to-purple-100 dark:from-purple-900/20', icon: '💰', link: null },
+    { label: 'Active Meals', value: activeMenus, color: 'text-emerald-600 dark:text-emerald-400', icon: <Utensils className="text-emerald-500" />, link: '/chef/menus' },
+    { label: 'Total Orders', value: orders.length, color: 'text-blue-600 dark:text-blue-400', icon: <Package className="text-blue-500" />, link: '/chef/orders' },
+    { label: 'Pending Orders', value: pendingOrders, color: 'text-orange-600 dark:text-orange-400', icon: <Clock className="text-orange-500" />, link: '/chef/orders' },
+    { label: 'Revenue Earned', value: `CA$${totalRevenue.toFixed(2)}`, color: 'text-purple-600 dark:text-purple-400', icon: <DollarSign className="text-purple-500" />, link: null },
   ];
 
   return (
@@ -88,22 +95,19 @@ export default function ChefDashboard() {
         </div>
 
         {/* Service Active Toggle */}
-        <div className={`flex items-center gap-4 px-6 py-3 rounded-2xl border transition-all duration-300 ${
-          profile?.service_active
+        <div className={`flex items-center gap-4 px-6 py-3 rounded-2xl border transition-all duration-300 ${profile?.service_active
             ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-700'
             : 'bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700'
-        }`}>
+          }`}>
           <span className="font-semibold text-gray-700 dark:text-gray-200 text-sm">Service</span>
           <button
             onClick={handleToggleService}
             disabled={isToggling}
-            className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none ${
-              profile?.service_active ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
-            }`}
+            className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none ${profile?.service_active ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
           >
-            <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
-              profile?.service_active ? 'translate-x-8' : 'translate-x-1'
-            }`} />
+            <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${profile?.service_active ? 'translate-x-8' : 'translate-x-1'
+              }`} />
           </button>
           <span className={`font-bold text-sm ${profile?.service_active ? 'text-emerald-600' : 'text-gray-400'}`}>
             {profile?.service_active ? 'LIVE' : 'OFF'}
@@ -112,18 +116,21 @@ export default function ChefDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
           <div
             key={stat.label}
             onClick={() => stat.link && navigate(stat.link)}
-            className={`bg-gradient-to-br ${stat.bg} bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 ${stat.link ? 'cursor-pointer hover:-translate-y-1' : ''}`}
+            className={`bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-300 ${stat.link ? 'cursor-pointer hover:border-blue-500/50 hover:shadow-md' : ''
+              }`}
           >
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-3xl">{stat.icon}</span>
-              <p className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                {stat.icon}
+              </div>
+              <p className="text-gray-500 dark:text-gray-400 font-semibold text-sm uppercase tracking-wider">{stat.label}</p>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium text-sm">{stat.label}</p>
+            <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -139,7 +146,7 @@ export default function ChefDashboard() {
             </div>
             <button onClick={() => setNotification(null)} className="ml-auto text-gray-400 hover:text-gray-600">✕</button>
           </div>
-          <button 
+          <button
             onClick={() => { setNotification(null); navigate('/chef/orders'); }}
             className="w-full mt-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors"
           >
@@ -168,34 +175,11 @@ export default function ChefDashboard() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-emerald-600">${order.total_price.toFixed(2)}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
-                      order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                      order.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
-                      order.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>{order.status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Subscribers Section */}
-        <div className="bg-white/80 backdrop-blur-md dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Active Subscribers</h3>
-          {subscribers.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">No subscribers yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {subscribers.map(sub => (
-                <div key={sub.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-800">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
-                    {sub.full_name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">{sub.full_name}</p>
-                    <p className="text-xs text-gray-500">{sub.email}</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        order.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                            'bg-red-100 text-red-700'
+                      }`}>{order.status}</span>
                   </div>
                 </div>
               ))}
@@ -203,6 +187,5 @@ export default function ChefDashboard() {
           )}
         </div>
       </div>
-    </div>
-  );
+      );
 }

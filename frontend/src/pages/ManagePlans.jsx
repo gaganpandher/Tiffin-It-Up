@@ -52,7 +52,7 @@ export default function ManagePlans() {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Price ($)</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Price (CA$)</label>
             <input type="number" step="0.01" required value={price} onChange={e=>setPrice(e.target.value)} className="w-full px-4 py-2 border rounded-xl dark:bg-gray-950 dark:border-gray-800 dark:text-white" />
           </div>
           <div>
@@ -77,7 +77,7 @@ export default function ManagePlans() {
               {plan.is_veg ? 'VEG' : 'NON-VEG'}
             </span>
             <h4 className="text-lg font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{plan.plan_type}</h4>
-            <p className="text-4xl font-extrabold text-gray-900 dark:text-white mt-4">${plan.price}</p>
+            <p className="text-4xl font-extrabold text-gray-900 dark:text-white mt-4">CA${plan.price}</p>
             <p className="text-gray-500 dark:text-gray-400 mt-4">{plan.description || 'No description provided.'}</p>
           </div>
         ))}

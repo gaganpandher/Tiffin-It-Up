@@ -38,8 +38,26 @@ export default function Signup() {
           role: role
         })
       });
-      // Redirect to login page on success
-      navigate('/login');
+      // Auto-login after registration
+      const formData = new FormData();
+      formData.append('username', email);
+      formData.append('password', password);
+      
+      const loginRes = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: formData,
+      });
+
+      setAuthToken(loginRes.access_token);
+      const payload = parseJwt(loginRes.access_token);
+      
+      if (payload && payload.role === 'customer') {
+        navigate('/customer/dashboard');
+      } else if (payload && payload.role === 'chef') {
+        navigate('/chef/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.message);
     }

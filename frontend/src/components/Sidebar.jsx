@@ -1,20 +1,29 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { 
+  BarChart3, 
+  Store, 
+  Package, 
+  UtensilsCrossed, 
+  CreditCard, 
+  Key,
+  LogOut
+} from 'lucide-react';
 
 export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
 
   const links = [
-    { name: 'Dashboard',    path: '/chef/dashboard', icon: '📊' },
-    { name: 'Store Profile', path: '/chef/profile',  icon: '🏪' },
-    { name: 'Live Orders',  path: '/chef/orders',    icon: '📦' },
-    { name: 'Manage Menus', path: '/chef/menus',     icon: '🍲' },
-    { name: 'Pricing Plans', path: '/chef/plans',    icon: '💳' },
-    { name: 'Change Password', path: '/chef/password', icon: '🔑' },
+    { name: 'Dashboard',       path: '/chef/dashboard', icon: <BarChart3 size={20} /> },
+    { name: 'Store Profile',   path: '/chef/profile',   icon: <Store size={20} /> },
+    { name: 'Live Orders',     path: '/chef/orders',    icon: <Package size={20} /> },
+    { name: 'Manage Menus',    path: '/chef/menus',     icon: <UtensilsCrossed size={20} /> },
+    { name: 'Pricing Plans',   path: '/chef/plans',     icon: <CreditCard size={20} /> },
+    { name: 'Change Password', path: '/chef/password',  icon: <Key size={20} /> },
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     navigate('/');
   };
 
@@ -42,7 +51,7 @@ export default function Sidebar({ isOpen, onClose }) {
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-emerald-500">Chef Portal</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tiffin It Up</h2>
           {/* Close button — mobile only */}
           <button
             onClick={onClose}
@@ -83,8 +92,9 @@ export default function Sidebar({ isOpen, onClose }) {
           )}
           <button
             onClick={handleLogout}
-            className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl transition-colors font-semibold shadow-sm"
           >
+            <LogOut size={18} />
             Logout
           </button>
         </div>

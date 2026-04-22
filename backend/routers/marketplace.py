@@ -58,10 +58,12 @@ def browse_meals(
             is_veg=item.is_veg,
             is_combo=item.is_combo,
             price=item.price,
+            category=item.category,
             chef_name=item.chef.full_name if item.chef else None,
             chef_avatar=chef_profile.profile_picture_url if chef_profile else None,
             chef_delivery_available=chef_profile.delivery_available if chef_profile else None,
             chef_service_active=chef_profile.service_active if chef_profile else True,
+            sub_items=[schemas.MenuItemShortOut.model_validate(si) for si in item.sub_items]
         ))
 
     return result

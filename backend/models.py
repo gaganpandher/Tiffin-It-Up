@@ -42,6 +42,11 @@ class CustomerProfile(Base):
     address = Column(Text, nullable=True)
     user = relationship("User")
 
+class CategoryEnum(str, enum.Enum):
+    meal = "meal"
+    sweet = "sweet"
+    drink = "drink"
+
 class MenuItem(Base):
     __tablename__ = "menu_items"
     id = Column(Integer, primary_key=True, index=True)
@@ -53,8 +58,23 @@ class MenuItem(Base):
     spice_level = Column(Integer, default=1)
     is_veg = Column(Boolean, default=True)
     is_combo = Column(Boolean, default=False)
-    price = Column(Float, default=0.0)  # USD, set by Chef
+    price = Column(Float, default=0.0)
+    category = Column(Enum(CategoryEnum), default=CategoryEnum.meal, nullable=False)
+    
     chef = relationship("User")
+    
+    # Relationship for combos (self-referential many-to-many)
+    sub_items = relationship(
+        "MenuItem",
+        secondary="menu_item_combos",
+        primaryjoin="MenuItem.id == MenuItemCombo.combo_id",
+        secondaryjoin="MenuItem.id == MenuItemCombo.sub_item_id",
+    )
+
+class MenuItemCombo(Base):
+    __tablename__ = "menu_item_combos"
+    combo_id = Column(Integer, ForeignKey("menu_items.id"), primary_key=True)
+    sub_item_id = Column(Integer, ForeignKey("menu_items.id"), primary_key=True)
 
 class PlanTypeEnum(str, enum.Enum):
     daily = "daily"
