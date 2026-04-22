@@ -186,6 +186,28 @@ export default function ChefDashboard() {
             </div>
           )}
         </div>
+        {/* Subscribers Section */}
+        <div className="bg-white/80 backdrop-blur-md dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Active Subscribers</h3>
+          {subscribers.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No subscribers yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {subscribers.map(sub => (
+                <div key={sub.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-800">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
+                    {sub.full_name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900 dark:text-white text-sm">{sub.full_name}</p>
+                    <p className="text-xs text-gray-500">{sub.email}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-      );
+    </div>
+  );
 }
