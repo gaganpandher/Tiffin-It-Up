@@ -45,7 +45,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
-        data={"email": user.email, "roles": user.roles}, expires_delta=access_token_expires
+        data={"id": user.id, "email": user.email, "roles": user.roles}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -84,7 +84,7 @@ def google_auth(request: GoogleAuthRequest, db: Session = Depends(database.get_d
         # Issue JWT mapping just like standard login
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
         access_token = create_access_token(
-            data={"email": user.email, "roles": user.roles}, expires_delta=access_token_expires
+            data={"id": user.id, "email": user.email, "roles": user.roles}, expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
     except ValueError:

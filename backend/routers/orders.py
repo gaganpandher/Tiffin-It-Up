@@ -16,7 +16,7 @@ def checkout(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    if current_user.role != models.RoleEnum.customer:
+    if "customer" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Only customers can place orders")
 
     # Validate all items belong to the stated chef
@@ -76,7 +76,7 @@ def my_orders(db: Session = Depends(get_db), current_user: models.User = Depends
 
 @router.get("/chef", response_model=List[schemas.OrderOut])
 def get_chef_orders(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    if current_user.role != models.RoleEnum.chef:
+    if "chef" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Not authorized")
     return db.query(models.Order).filter(models.Order.chef_id == current_user.id).order_by(models.Order.id.desc()).all()
 
@@ -87,7 +87,7 @@ def update_order_status(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    if current_user.role != models.RoleEnum.chef:
+    if "chef" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Not authorized")
     order = db.query(models.Order).filter(models.Order.id == order_id, models.Order.chef_id == current_user.id).first()
     if not order:
