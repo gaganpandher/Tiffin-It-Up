@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
@@ -87,7 +88,7 @@ def get_menus(db: Session = Depends(get_db), current_user: models.User = Depends
 @router.post("/menus", response_model=schemas.MenuItemOut)
 async def create_menu(
     name: str = Form(...),
-    description: Optional[str] = Form(None),
+    description: str = Form(...),
     is_active: bool = Form(True),
     spice_level: int = Form(1),
     is_veg: bool = Form(True),
@@ -135,7 +136,7 @@ async def create_menu(
 async def update_menu(
     menu_id: int,
     name: str = Form(...),
-    description: Optional[str] = Form(None),
+    description: str = Form(...),
     is_active: bool = Form(True),
     spice_level: int = Form(1),
     is_veg: bool = Form(True),
@@ -205,15 +206,52 @@ def create_plan(plan_in: schemas.PricingPlanBase, db: Session = Depends(get_db),
     db.refresh(new_plan)
     return new_plan
 
-@router.get("/subscribers", response_model=List[schemas.UserOut])
+@router.get("/subscribers", response_model=List[schemas.ChefSubscriberOut])
 def get_subscribers(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
-    # Join Subscriptions with PricingPlans to find customers subscribed to this chef
-    subscribers = db.query(models.User).join(
+    # Join User, Subscription, and PricingPlan to get full context for the chef
+    results = db.query(
+        models.User.id,
+        models.User.full_name,
+        models.User.email,
+        models.User.phone_number,
+        models.PricingPlan.plan_type,
+        models.PricingPlan.price.label("plan_price"),
+        models.PricingPlan.is_veg.label("plan_is_veg"),
+        models.Subscription.allergies,
+        models.Subscription.notes
+    ).join(
         models.Subscription, models.Subscription.customer_id == models.User.id
     ).join(
         models.PricingPlan, models.PricingPlan.id == models.Subscription.plan_id
     ).filter(
         models.PricingPlan.chef_id == current_user.id,
         models.Subscription.status == models.SubscriptionStatusEnum.active
-    ).distinct().all()
-    return subscribers
+    ).all()
+    
+    return results
+
+@router.get("/stats")
+def get_chef_stats(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_chef)):
+    # 1. Revenue from completed orders
+    order_revenue = db.query(func.sum(models.Order.total_price)).filter(
+        models.Order.chef_id == current_user.id,
+        models.Order.status == models.OrderStatusEnum.completed
+    ).scalar() or 0.0
+    
+    # 2. Revenue from active subscriptions (face value)
+    sub_revenue = db.query(func.sum(models.PricingPlan.price)).join(
+        models.Subscription, models.Subscription.plan_id == models.PricingPlan.id
+    ).filter(
+        models.PricingPlan.chef_id == current_user.id,
+        models.Subscription.status == models.SubscriptionStatusEnum.active
+    ).scalar() or 0.0
+    
+    return {
+        "total_revenue": order_revenue + sub_revenue,
+        "order_revenue": order_revenue,
+        "subscription_revenue": sub_revenue,
+        "active_subscribers": db.query(models.Subscription).join(models.PricingPlan).filter(models.PricingPlan.chef_id == current_user.id, models.Subscription.status == models.SubscriptionStatusEnum.active).count(),
+        "total_orders": db.query(models.Order).filter(models.Order.chef_id == current_user.id).count(),
+        "pending_orders": db.query(models.Order).filter(models.Order.chef_id == current_user.id, models.Order.status == models.OrderStatusEnum.pending).count(),
+        "active_menus": db.query(models.MenuItem).filter(models.MenuItem.chef_id == current_user.id, models.MenuItem.is_active == True).count()
+    }

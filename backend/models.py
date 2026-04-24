@@ -18,6 +18,7 @@ class User(Base):
     roles = Column(String(255), default="customer", nullable=False) # Comma-separated roles
     phone_number = Column(String(50), nullable=True)
     is_active = Column(Boolean, default=True)
+    chef_profile = relationship("ChefProfile", back_populates="user", uselist=False)
 
 class ChefProfile(Base):
     __tablename__ = "chef_profiles"
@@ -32,7 +33,7 @@ class ChefProfile(Base):
     service_active = Column(Boolean, default=True)
     time_slots_delivery = Column(String(500), nullable=True)
     time_slots_pickup = Column(String(500), nullable=True)
-    user = relationship("User")
+    user = relationship("User", back_populates="chef_profile")
 
 class CustomerProfile(Base):
     __tablename__ = "customer_profiles"
@@ -101,6 +102,8 @@ class Subscription(Base):
     customer_id = Column(Integer, ForeignKey("users.id"))
     plan_id = Column(Integer, ForeignKey("pricing_plans.id"))
     status = Column(Enum(SubscriptionStatusEnum), default=SubscriptionStatusEnum.active)
+    allergies = Column(String(500), nullable=True)
+    notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     customer = relationship("User", foreign_keys=[customer_id])
     plan = relationship("PricingPlan")
@@ -124,6 +127,12 @@ class Order(Base):
     customer = relationship("User", foreign_keys=[customer_id])
     chef = relationship("User", foreign_keys=[chef_id])
     items = relationship("OrderItem", back_populates="order")
+
+    @property
+    def chef_pickup_address(self):
+        if self.chef and self.chef.chef_profile:
+            return self.chef.chef_profile.pickup_address
+        return None
 
 class OrderItem(Base):
     __tablename__ = "order_items"

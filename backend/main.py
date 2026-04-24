@@ -5,24 +5,19 @@ from routers import auth, users, chef, orders, customer, marketplace, feedback, 
 from database import engine, Base
 import os
 
-# Create tables on startup
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Tiffin System API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-        "https://tiffin-it-up.onrender.com",
-    ],
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):517\d", # Matches 5170-5179
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router)
 app.include_router(users.router)

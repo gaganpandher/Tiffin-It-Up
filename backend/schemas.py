@@ -53,6 +53,19 @@ class ChefProfileOut(ChefProfileBase):
     class Config:
         from_attributes = True
 
+class ChefProfilePublicOut(BaseModel):
+    id: int
+    full_name: Optional[str] = None
+    bio: Optional[str] = None
+    profile_picture_url: Optional[str] = None
+    cover_image_url: Optional[str] = None
+    pickup_address: Optional[str] = None
+    delivery_available: bool = True
+    base_delivery_price: float = 0.0
+    service_active: bool = True
+    class Config:
+        from_attributes = True
+
 # ── Customer Profile ──────────────────────────────────────────────────────────
 class CustomerProfileBase(BaseModel):
     address: Optional[str] = None
@@ -67,7 +80,7 @@ class CustomerProfileOut(CustomerProfileBase):
 # ── Menu Item ─────────────────────────────────────────────────────────────────
 class MenuItemCreate(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str
     is_active: bool = True
     spice_level: int = 1
     is_veg: bool = True
@@ -126,7 +139,7 @@ MenuItemOut.model_rebuild()
 class PricingPlanBase(BaseModel):
     plan_type: PlanTypeEnum
     price: float
-    description: Optional[str] = None
+    description: str
     is_veg: bool = True
 
 class PricingPlanOut(PricingPlanBase):
@@ -144,13 +157,30 @@ class PricingPlanPublicOut(PricingPlanOut):
 # ── Subscriptions ─────────────────────────────────────────────────────────────
 class SubscriptionCreate(BaseModel):
     plan_id: int
+    allergies: Optional[str] = None
+    notes: Optional[str] = None
 
 class SubscriptionOut(BaseModel):
     id: int
     customer_id: int
     plan_id: int
     status: SubscriptionStatusEnum
+    allergies: Optional[str] = None
+    notes: Optional[str] = None
     plan: Optional[PricingPlanPublicOut] = None
+    class Config:
+        from_attributes = True
+
+class ChefSubscriberOut(BaseModel):
+    id: int
+    full_name: str
+    email: str
+    phone_number: Optional[str] = None
+    plan_type: str
+    plan_price: float
+    plan_is_veg: bool
+    allergies: Optional[str] = None
+    notes: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -185,6 +215,7 @@ class OrderOut(BaseModel):
     discount_applied: float
     delivery_type: str
     time_slot: str
+    chef_pickup_address: Optional[str] = None
     items: List[OrderItemOut] = []
     class Config:
         from_attributes = True

@@ -57,6 +57,16 @@ export default function MyOrders() {
                       {order.time_slot}
                     </span>
                   </div>
+                  
+                  {order.delivery_type === 'pickup' && order.chef_pickup_address && (
+                    <div className="mt-4 flex items-start gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/50 w-fit">
+                      <MapPin size={14} className="shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-black uppercase tracking-widest block mb-0.5 text-[9px]">Pickup Location:</span>
+                        {order.chef_pickup_address}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <span className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black border uppercase tracking-widest ${STATUS_CONFIG[order.status]?.style}`}>
                   {STATUS_CONFIG[order.status]?.icon}
@@ -81,11 +91,6 @@ export default function MyOrders() {
                   ))}
                 </div>
                 <div className="text-right">
-                  {order.discount_applied > 0 && (
-                    <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mb-1">
-                      Discount Applied: −CA${order.discount_applied.toFixed(2)}
-                    </p>
-                  )}
                   <p className="text-2xl font-black text-blue-600 dark:text-blue-400">CA${order.total_price.toFixed(2)}</p>
                 </div>
               </div>

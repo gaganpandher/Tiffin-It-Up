@@ -179,10 +179,12 @@ export default function BrowseMeals() {
                   <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md text-white shadow-sm ${meal.is_active ? 'bg-emerald-600/90' : 'bg-gray-500/90'}`}>
                     {meal.is_active ? 'Available' : 'Paused'}
                   </span>
-                  <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md bg-sky-500/90 text-white shadow-sm flex items-center gap-1.5">
-                    {meal.chef_delivery_available ? <Truck size={10} /> : <ShoppingBag size={10} />}
-                    {meal.chef_delivery_available ? 'Delivery' : 'Pickup'}
-                  </span>
+                  {meal.chef_delivery_available && (
+                    <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md bg-sky-500/90 text-white shadow-sm flex items-center gap-1.5 transition-all animate-in fade-in slide-in-from-right-2">
+                      <Truck size={10} />
+                      Delivery
+                    </span>
+                  )}
                 </div>
               </div>
 

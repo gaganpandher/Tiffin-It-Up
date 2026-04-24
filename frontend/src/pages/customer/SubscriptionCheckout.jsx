@@ -27,12 +27,19 @@ export default function SubscriptionCheckout() {
       .finally(() => setIsLoading(false));
   }, [planId]);
 
+  const [allergies, setAllergies] = useState('');
+  const [notes, setNotes] = useState('');
+
   const handleConfirmSubscription = async () => {
     setIsProcessing(true);
     try {
       await apiRequest('/marketplace/subscribe', {
         method: 'POST',
-        body: JSON.stringify({ plan_id: parseInt(planId) })
+        body: JSON.stringify({ 
+          plan_id: parseInt(planId),
+          allergies,
+          notes
+        })
       });
       navigate('/customer/subscriptions');
     } catch (err) {
@@ -66,6 +73,34 @@ export default function SubscriptionCheckout() {
             <span className="text-3xl font-extrabold text-blue-600">${plan.price.toFixed(2)}</span>
           </div>
           <p className="text-xs text-blue-500 mt-2">Billed {plan.plan_type === 'daily' ? 'per day' : plan.plan_type === 'weekly' ? 'per week' : 'per month'}.</p>
+        </div>
+
+        <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+          <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            🥗 Health & Preferences
+          </h4>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Allergies (e.g. Nuts, Gluten)</label>
+              <input
+                type="text"
+                value={allergies}
+                onChange={(e) => setAllergies(e.target.value)}
+                placeholder="List any allergies..."
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-850 border border-gray-100 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Special Instructions</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Any other preferences or comments?"
+                rows={2}
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-850 border border-gray-100 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">

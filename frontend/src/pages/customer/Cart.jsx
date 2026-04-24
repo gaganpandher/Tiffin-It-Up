@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { apiRequest } from '../../services/api';
@@ -11,7 +11,8 @@ import {
   Truck, 
   Package,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  MapPin
 } from 'lucide-react';
 
 const TIME_SLOTS = [
@@ -25,8 +26,17 @@ export default function Cart() {
   const { cartItems, cartChefId, removeFromCart, updateQuantity, clearCart, subtotal, discount, total, comboLabel, setComboLabel } = useCart();
   const [deliveryType, setDeliveryType] = useState('delivery');
   const [timeSlot, setTimeSlot] = useState('');
+  const [chefProfile, setChefProfile] = useState(null);
   const [isPlacing, setIsPlacing] = useState(false);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (cartChefId) {
+      apiRequest(`/marketplace/chefs/${cartChefId}`)
+        .then(setChefProfile)
+        .catch(console.error);
+    }
+  }, [cartChefId]);
 
   const handleCheckout = async () => {
     if (!timeSlot) { alert('Please select a time slot.'); return; }
@@ -137,10 +147,12 @@ export default function Cart() {
             
             <div className="space-y-4 text-sm font-medium">
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>CA${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-emerald-600">
-                <span className="flex items-center gap-1.5">Combo Discount (10%)</span>
-                <span>−CA${discount.toFixed(2)}</span>
-              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span className="flex items-center gap-1.5">Combo Discount (10%)</span>
+                  <span>−CA${discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="pt-4 border-t border-gray-50 dark:border-gray-800 flex justify-between font-black text-2xl dark:text-white">
                 <span>Total</span>
                 <span className="text-blue-600 dark:text-blue-400">CA${total.toFixed(2)}</span>
@@ -174,6 +186,18 @@ export default function Cart() {
                 {TIME_SLOTS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+
+            {deliveryType === 'pickup' && chefProfile?.pickup_address && (
+              <div className="p-5 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-800 space-y-2 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-sm">
+                  <MapPin size={16} />
+                  Pickup Address
+                </div>
+                <p className="text-xs text-emerald-600 dark:text-emerald-300 leading-relaxed font-medium">
+                  {chefProfile.pickup_address}
+                </p>
+              </div>
+            )}
 
             <button 
               onClick={handleCheckout} 

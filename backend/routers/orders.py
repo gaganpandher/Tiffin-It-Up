@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from database import get_db
 from core.deps import get_current_user
@@ -8,11 +8,10 @@ from routers.notifications import manager
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
-COMBO_DISCOUNT = 0.10  # 10% off total
-
 @router.post("/checkout", response_model=schemas.OrderOut)
 def checkout(
     payload: schemas.OrderCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -34,9 +33,9 @@ def checkout(
         subtotal += line_total
         order_items_data.append((menu_item, item_in.quantity, menu_item.price, item_in.combo_label))
 
-    # Apply 10% combo discount
-    discount = round(subtotal * COMBO_DISCOUNT, 2)
-    total = round(subtotal - discount, 2)
+    # Calculate total without automatic discounts
+    discount = 0.0
+    total = round(subtotal, 2)
 
     order = models.Order(
         customer_id=current_user.id,
@@ -59,26 +58,36 @@ def checkout(
         ))
 
     db.commit()
-    db.refresh(order)
+    
+    # Reload order with items and chef info to ensure safe serialization
+    order = db.query(models.Order).options(
+        joinedload(models.Order.items),
+        joinedload(models.Order.chef).joinedload(models.User.chef_profile)
+    ).filter(models.Order.id == order.id).first()
 
-    # Trigger notification to chef
-    import asyncio
-    asyncio.create_task(manager.send_personal_message(
+    # Trigger notification to chef in the background
+    background_tasks.add_task(
+        manager.send_personal_message,
         {"type": "NEW_ORDER", "order_id": order.id, "customer_name": current_user.full_name},
         payload.chef_id
-    ))
+    )
 
     return order
 
 @router.get("/me", response_model=List[schemas.OrderOut])
 def my_orders(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    return db.query(models.Order).filter(models.Order.customer_id == current_user.id).order_by(models.Order.id.desc()).all()
+    return db.query(models.Order).options(
+        joinedload(models.Order.items),
+        joinedload(models.Order.chef).joinedload(models.User.chef_profile)
+    ).filter(models.Order.customer_id == current_user.id).order_by(models.Order.id.desc()).all()
 
 @router.get("/chef", response_model=List[schemas.OrderOut])
 def get_chef_orders(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if "chef" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Not authorized")
-    return db.query(models.Order).filter(models.Order.chef_id == current_user.id).order_by(models.Order.id.desc()).all()
+    return db.query(models.Order).options(
+        joinedload(models.Order.items)
+    ).filter(models.Order.chef_id == current_user.id).order_by(models.Order.id.desc()).all()
 
 @router.put("/{order_id}/status", response_model=schemas.OrderOut)
 def update_order_status(

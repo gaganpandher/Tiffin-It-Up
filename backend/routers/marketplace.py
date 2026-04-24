@@ -113,7 +113,12 @@ def subscribe_to_plan(
         if existing_conflict:
             raise HTTPException(status_code=400, detail=f"You already have an active {other_type.value} plan with this kitchen. Please cancel it first.")
 
-    sub = models.Subscription(customer_id=current_user.id, plan_id=payload.plan_id)
+    sub = models.Subscription(
+        customer_id=current_user.id, 
+        plan_id=payload.plan_id,
+        allergies=payload.allergies,
+        notes=payload.notes
+    )
     db.add(sub)
     db.commit()
     db.refresh(sub)
@@ -131,3 +136,23 @@ def cancel_subscription(sub_id: int, db: Session = Depends(get_db), current_user
     sub.status = models.SubscriptionStatusEnum.cancelled
     db.commit()
     return {"message": "Subscription cancelled"}
+@router.get("/chefs/{chef_id}", response_model=schemas.ChefProfilePublicOut)
+def get_chef_details(chef_id: int, db: Session = Depends(get_db)):
+    chef_profile = db.query(models.ChefProfile).filter(models.ChefProfile.user_id == chef_id).first()
+    if not chef_profile:
+        raise HTTPException(status_code=404, detail="Chef profile not found")
+    
+    # We use user.full_name for the chef's name
+    user = db.query(models.User).filter(models.User.id == chef_id).first()
+    
+    return schemas.ChefProfilePublicOut(
+        id=chef_id,
+        full_name=user.full_name if user else "Unknown Chef",
+        bio=chef_profile.bio,
+        profile_picture_url=chef_profile.profile_picture_url,
+        cover_image_url=chef_profile.cover_image_url,
+        pickup_address=chef_profile.pickup_address,
+        delivery_available=chef_profile.delivery_available,
+        base_delivery_price=chef_profile.base_delivery_price,
+        service_active=chef_profile.service_active
+    )

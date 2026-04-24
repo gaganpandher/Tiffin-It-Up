@@ -7,8 +7,6 @@ export default function ChefProfile() {
   const [pickupAddress, setPickupAddress] = useState('');
   const [deliveryAvailable, setDeliveryAvailable] = useState(true);
   const [baseDeliveryPrice, setBaseDeliveryPrice] = useState(0);
-  const [timeSlotsDelivery, setTimeSlotsDelivery] = useState('');
-  const [timeSlotsPickup, setTimeSlotsPickup] = useState('');
   const [isUploading, setIsUploading] = useState(null); // 'avatar' | 'cover' | null
   const [isSaving, setIsSaving] = useState(false);
   const [phone, setPhone] = useState('');
@@ -38,8 +36,6 @@ export default function ChefProfile() {
       setPickupAddress(pData.pickup_address || '');
       setDeliveryAvailable(pData.delivery_available);
       setBaseDeliveryPrice(pData.base_delivery_price || 0);
-      setTimeSlotsDelivery(pData.time_slots_delivery || '');
-      setTimeSlotsPickup(pData.time_slots_pickup || '');
       setPhone(uData.phone_number || '');
     } catch (err) {
       console.error(err);
@@ -95,8 +91,6 @@ export default function ChefProfile() {
           pickup_address: pickupAddress,
           delivery_available: deliveryAvailable,
           base_delivery_price: parseFloat(baseDeliveryPrice),
-          time_slots_delivery: timeSlotsDelivery,
-          time_slots_pickup: timeSlotsPickup,
           service_active: profile?.service_active ?? true,
         }),
       });
@@ -251,20 +245,13 @@ export default function ChefProfile() {
           </div>
 
           {deliveryAvailable && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Base Delivery Fee ($)</label>
                 <input
                   type="number" step="0.5" value={baseDeliveryPrice} onChange={e => setBaseDeliveryPrice(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 border border-transparent focus:border-emerald-500 rounded-xl dark:text-white outline-none transition-all"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Delivery Time Slot</label>
-                <select value={timeSlotsDelivery} onChange={e => setTimeSlotsDelivery(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 border border-transparent focus:border-emerald-500 rounded-xl dark:text-white outline-none transition-all">
-                  <option value="">Select slot</option>
-                  {TIME_SLOT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
               </div>
             </div>
           )}
@@ -278,13 +265,6 @@ export default function ChefProfile() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pickup Time Slot</label>
-            <select value={timeSlotsPickup} onChange={e => setTimeSlotsPickup(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-950 border border-transparent focus:border-emerald-500 rounded-xl dark:text-white outline-none transition-all">
-              <option value="">Select slot</option>
-              {TIME_SLOT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          </div>
 
           <button
             type="submit"

@@ -17,6 +17,7 @@ export default function ChefDashboard() {
   const navigate = useNavigate();
 
   const [subscribers, setSubscribers] = useState([]);
+  const [statsData, setStatsData] = useState(null);
   const [notification, setNotification] = useState(null);
 
   useEffect(() => {
@@ -25,11 +26,13 @@ export default function ChefDashboard() {
       apiRequest('/chef/menus'),
       apiRequest('/orders/chef'),
       apiRequest('/chef/subscribers'),
-    ]).then(([profileData, menuData, orderData, subData]) => {
+      apiRequest('/chef/stats'),
+    ]).then(([profileData, menuData, orderData, subData, stats]) => {
       setProfile(profileData);
       setMenus(menuData);
       setOrders(orderData);
       setSubscribers(subData);
+      setStatsData(stats);
     }).catch(console.error);
 
     // WebSocket Notifications
@@ -74,15 +77,35 @@ export default function ChefDashboard() {
     }
   };
 
-  const activeMenus = menus.filter(m => m.is_active).length;
-  const pendingOrders = orders.filter(o => o.status === 'pending').length;
-  const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total_price, 0);
-
   const stats = [
-    { label: 'Active Meals', value: activeMenus, color: 'text-emerald-600 dark:text-emerald-400', icon: <Utensils className="text-emerald-500" />, link: '/chef/menus' },
-    { label: 'Total Orders', value: orders.length, color: 'text-blue-600 dark:text-blue-400', icon: <Package className="text-blue-500" />, link: '/chef/orders' },
-    { label: 'Pending Orders', value: pendingOrders, color: 'text-orange-600 dark:text-orange-400', icon: <Clock className="text-orange-500" />, link: '/chef/orders' },
-    { label: 'Revenue Earned', value: `CA$${totalRevenue.toFixed(2)}`, color: 'text-purple-600 dark:text-purple-400', icon: <DollarSign className="text-purple-500" />, link: null },
+    { 
+      label: 'Active Meals', 
+      value: statsData?.active_menus ?? menus.filter(m => m.is_active).length, 
+      color: 'text-emerald-600 dark:text-emerald-400', 
+      icon: <Utensils className="text-emerald-500" />, 
+      link: '/chef/menus' 
+    },
+    { 
+      label: 'Total Orders', 
+      value: statsData?.total_orders ?? orders.length, 
+      color: 'text-blue-600 dark:text-blue-400', 
+      icon: <Package className="text-blue-500" />, 
+      link: '/chef/orders' 
+    },
+    { 
+      label: 'Pending Orders', 
+      value: statsData?.pending_orders ?? orders.filter(o => o.status === 'pending').length, 
+      color: 'text-orange-600 dark:text-orange-400', 
+      icon: <Clock className="text-orange-500" />, 
+      link: '/chef/orders' 
+    },
+    { 
+      label: 'Revenue Earned', 
+      value: `CA$${(statsData?.total_revenue ?? 0).toFixed(2)}`, 
+      color: 'text-purple-600 dark:text-purple-400', 
+      icon: <DollarSign className="text-purple-500" />, 
+      link: null 
+    },
   ];
 
   return (
@@ -194,14 +217,44 @@ export default function ChefDashboard() {
           ) : (
             <div className="space-y-4">
               {subscribers.map(sub => (
-                <div key={sub.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-800">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
-                    {sub.full_name.charAt(0)}
+                <div key={sub.id} className="p-4 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-800 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold shrink-0">
+                      {sub.full_name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 dark:text-white text-sm truncate">{sub.full_name}</p>
+                      <p className="text-[10px] text-gray-500 truncate">{sub.email}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${sub.plan_is_veg ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                        {sub.plan_is_veg ? 'Veg' : 'Non-Veg'}
+                      </span>
+                      <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tighter">{sub.plan_type}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">{sub.full_name}</p>
-                    <p className="text-xs text-gray-500">{sub.email}</p>
-                  </div>
+                  
+                  {(sub.allergies || sub.notes) && (
+                    <div className="pt-3 border-t border-gray-200/50 dark:border-gray-800 space-y-2">
+                      {sub.allergies && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-[10px] mt-0.5">⚠️</span>
+                          <p className="text-[11px] text-red-500 font-bold leading-tight">
+                            <span className="uppercase text-[9px] text-gray-400 font-medium block">Allergies:</span> 
+                            {sub.allergies}
+                          </p>
+                        </div>
+                      )}
+                      {sub.notes && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-[10px] mt-0.5">📝</span>
+                          <p className="text-[11px] text-gray-600 dark:text-gray-400 italic leading-tight">
+                            {sub.notes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

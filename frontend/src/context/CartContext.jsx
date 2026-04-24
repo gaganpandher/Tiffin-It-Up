@@ -49,8 +49,8 @@ export function CartProvider({ children }) {
   };
 
   const subtotal = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const discount = Math.round(subtotal * 0.10 * 100) / 100;
-  const total = Math.round((subtotal - discount) * 100) / 100;
+  const discount = 0;
+  const total = Math.round(subtotal * 100) / 100;
   const itemCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
   return (

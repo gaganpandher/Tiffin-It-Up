@@ -141,7 +141,7 @@ export default function ManageMenus() {
             
             <div>
               <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Description</label>
-              <textarea value={description} onChange={e=>setDescription(e.target.value)} 
+              <textarea required value={description} onChange={e=>setDescription(e.target.value)} 
                 className="w-full px-6 py-4 bg-gray-50 dark:bg-gray-950 border border-transparent focus:border-emerald-500 rounded-[1.5rem] dark:text-white transition-all outline-none resize-none font-medium" 
                 rows="4" placeholder="Describe the soul of this dish..."></textarea>
             </div>

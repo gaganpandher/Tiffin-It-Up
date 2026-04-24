@@ -64,7 +64,7 @@ export default function ManagePlans() {
           </div>
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Description</label>
-            <textarea value={description} onChange={e=>setDescription(e.target.value)} className="w-full px-4 py-2 border rounded-xl dark:bg-gray-950 dark:border-gray-800 dark:text-white" rows="2"></textarea>
+            <textarea required value={description} onChange={e=>setDescription(e.target.value)} className="w-full px-4 py-2 border rounded-xl dark:bg-gray-950 dark:border-gray-800 dark:text-white" rows="2"></textarea>
           </div>
           <button type="submit" className="px-6 py-2 bg-[var(--primary)] text-white rounded-xl hover:bg-red-500 transition-colors">Create Plan</button>
         </form>
