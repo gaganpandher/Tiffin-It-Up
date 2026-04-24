@@ -1,80 +1,75 @@
-# Tiffin It Up: Modern Home-Cooked Meal Marketplace
+# Tiffin It Up: Professional Home-Chef Marketplace & Management
 
-Tiffin It Up is a premium meal delivery platform connecting talented home chefs with customers seeking authentic, home-cooked food. The platform is designed with a high-end "Glassmorphism" aesthetic and robust production-ready architecture.
-
----
-
-## Live Production
-- **Frontend**: [tiffin-it-up.vercel.app](https://tiffin-it-up.vercel.app)
-- **Backend API**: [tiffin-it-up.onrender.com/docs](https://tiffin-it-up.onrender.com/docs)
+Tiffin It Up is a high-performance, full-stack marketplace connecting authentic home chefs with health-conscious customers. Built with a focus on **Culinary Transparency**, **Fulfillment Reliability**, and **Comprehensive Analytics**, it provides a premium experience for both kitchen management and customer ordering.
 
 ---
 
-## Tech Stack
+## 🚀 Key Technological Pillars
+
+### 1. Advanced Revenue & Analytics
+The Chef Dashboard provides a unified financial view, aggregating income from two distinct streams:
+- **Individual Meal Orders**: Revenue from one-off marketplace transactions.
+- **Active Subscription Plans**: Recurring revenue from weekly and monthly pricing plans.
+- **Real-time Metrics**: Instant visibility into active subscribers, pending orders, and total earnings.
+
+### 2. Fulfillment & Logistics Mastery
+- **Smart Delivery Toggles**: When a chef disables delivery in their profile, the marketplace automatically removes delivery badges and restricts fulfillment to Pickup.
+- **Automated Pickup Guidance**: Customers choosing pickup are instantly provided with the chef's specific pickup address in the cart and order history.
+- **Global Time Slots**: A simplified arrival window system that notifies chefs of the customer's preferred delivery/pickup time without requiring complex slot management.
+
+### 3. Health & Culinary Safety
+- **Health & Preferences Tracking**: Subscribers can specify allergies (nuts, gluten, etc.) and custom dietary notes, which are surfaced to the chef with high-visibility warnings.
+- **Mandatory Documentation**: Enforced descriptions for all meals and plans ensure customers always know exactly what they are ordering.
+
+### 4. Enterprise-Grade Stability
+- **Asynchronous Notifications**: Order confirmations use FastAPI `BackgroundTasks` to prevent "Fail to Fetch" errors and ensure the UI remains responsive during chef alerts.
+- **Robust Serialization**: Multi-table data hydration ensures deep order details (items, prices, combo labels) are accurately preserved in the order history.
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
-- **Framework**: React.js 18+ (Vite)
-- **Styling**: Vanilla CSS (Premium Glassmorphism & Micro-animations)
-- **Routing**: React Router DOM v6
-- **Auth**: JWT (JSON Web Tokens) & Google OAuth Provider
+- **Framework**: React 18+ (Vite)
+- **Styling**: Vanilla CSS (Premium Glassmorphism & High-Contrast Design)
+- **State Management**: Context API (Cart & Auth)
+- **Visuals**: Lucide Icons & Cloudinary CDN Integration
 
 ### Backend
-- **Framework**: FastAPI (High-performance Python)
-- **Database**: PostgreSQL (Production) / SQLite (Local Development)
-- **ORM**: SQLAlchemy
-- **Media Hosting**: **Cloudinary CDN** (Scalable image storage for meal & profile assets)
-- **Security**: Native `bcrypt` hashing & JWT role-based access control (RBAC)
+- **Framework**: FastAPI (Python 3.10+)
+- **Database**: SQLAlchemy (SQLite for Dev / PostgreSQL for Prod)
+- **Security**: JWT Role-Based Access Control & Bcrypt Hashing
+- **Notifications**: Real-time WebSocket support for order alerts
 
 ---
 
-## Key Features & "Current Scenario"
+## 📁 Project Structure
 
-### Chef Command Center
-- **Interactive Profile Architecture**: Hover-based management for Cover Banners and Avatars using Cloudinary integration.
-- **Dynamic Menu Catalog**: Create/Edit/Delete meals with granular attributes:
-  - Spice Levels (1-5)
-  - Veg / Non-Veg classifications
-  - Combo Deal toggles
-  - Live availability toggles (Instant state change without reload)
-- **Live Kitchen Orders**: Real-time order monitoring with internal state transitions: **Pending → Accepted → Delivered**.
-- **Real-time Analytics**: Live tracking of Revenue, Active Meals, and Order volume.
-- **Service Mastery**: Master "Kitchen ON/OFF" switch to control storefront visibility.
-
-###  Responsive Design
-- **Mobile-First Layout**: Sliding sidebars and hamburger menus designed for busy chefs on the go.
-- **Micro-animations**: Smooth transitions, hover overlays, and glassmorphic layers for a premium feel.
-
----
-
-## Environment Configuration
-
-### Backend (`.env`)
-```env
-DATABASE_URL=postgresql://user:pass@host/db  # Use SQLite locally
-SECRET_KEY=your_secret_key
-CLOUDINARY_CLOUD_NAME=your_name
-CLOUDINARY_API_KEY=your_key
-CLOUDINARY_API_SECRET=your_secret
-```
-
-### Frontend (`.env`)
-```env
-VITE_API_URL=https://tiffin-it-up.onrender.com
-VITE_GOOGLE_CLIENT_ID=your_google_id
+```text
+Tiffin-It-Up/
+├── backend/            # FastAPI Application
+│   ├── routers/        # Modular API Endpoints (Chef, Orders, Marketplace, etc.)
+│   ├── core/           # Security, Dependencies, and Media Config
+│   ├── models.py       # SQLAlchemy Schema
+│   └── main.py         # App Entry Point & Middleware
+└── frontend/           # React Application (Vite)
+    ├── src/
+    │   ├── pages/      # Chef/Customer Dashboards & Marketplace
+    │   ├── context/    # Cart & Theme State
+    │   └── services/   # API Communication Layer
 ```
 
 ---
 
-## Local Development
+## ⚙️ Local Development
 
 ### 1. Backend Setup
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # Windows: .\venv\Scripts\activate
+.\venv\Scripts\activate
 pip install -r requirements.txt
-python init_db.py  # Warning: This drops and recreates tables for schema sync
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8000
 ```
 
 ### 2. Frontend Setup
@@ -84,11 +79,13 @@ npm install
 npm run dev
 ```
 
----
-
-## Deployment Logic
-- **Frontend**: CI/CD via Vercel (automatically handles SPA routing via `vercel.json`).
-- **Backend**: Hosted on Render. Uses `render.yaml` for Blueprint orchestration and automated database migrations during deployments.
+### 3. Environment Variables
+- **Backend**: Configure `CLOUDINARY_URL` and `SECRET_KEY` in `.env`.
+- **Frontend**: Set `VITE_API_URL=http://localhost:8000` in `.env`.
 
 ---
-*Built with ❤️ for home-cooks and food lovers.*
+
+## 🎯 Our Mission
+To professionalize home-cooked meal services by providing chefs with the same operational tools used by large restaurants, while maintaining the personal touch and authenticity of home cooking.
+
+*Built with ❤️ for the global culinary community.*
