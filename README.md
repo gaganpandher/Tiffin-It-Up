@@ -1,4 +1,4 @@
-# Tiffin It Up: Professional Home-Chef Marketplace & Management
+# Tiffin It Up: Home-Chef Marketplace
 
 Tiffin It Up is a high-performance, full-stack marketplace connecting authentic home chefs with health-conscious customers. Built with a focus on **Culinary Transparency**, **Fulfillment Reliability**, and **Comprehensive Analytics**, it provides a premium experience for both kitchen management and customer ordering.
 
@@ -85,7 +85,5 @@ npm run dev
 
 ---
 
-## 🎯 Our Mission
-To professionalize home-cooked meal services by providing chefs with the same operational tools used by large restaurants, while maintaining the personal touch and authenticity of home cooking.
 
 *Built with ❤️ for the global culinary community.*
