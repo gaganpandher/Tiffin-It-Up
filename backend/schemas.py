@@ -205,6 +205,7 @@ class OrderCreate(BaseModel):
     items: List[OrderItemBase]
     delivery_type: str
     time_slot: str
+    delivery_address: Optional[str] = None
 
 class OrderOut(BaseModel):
     id: int
@@ -215,6 +216,7 @@ class OrderOut(BaseModel):
     discount_applied: float
     delivery_type: str
     time_slot: str
+    delivery_address: Optional[str] = None
     chef_pickup_address: Optional[str] = None
     items: List[OrderItemOut] = []
     class Config:

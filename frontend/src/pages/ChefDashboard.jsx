@@ -166,6 +166,9 @@ export default function ChefDashboard() {
             <div>
               <p className="font-extrabold text-lg text-gray-900 dark:text-white">New Order!</p>
               <p className="text-sm text-gray-500">{notification.customer_name} just placed an order.</p>
+              {notification.delivery_type === 'delivery' && notification.delivery_address && (
+                <p className="text-[11px] font-bold text-blue-500 mt-1">📍 {notification.delivery_address}</p>
+              )}
             </div>
             <button onClick={() => setNotification(null)} className="ml-auto text-gray-400 hover:text-gray-600">✕</button>
           </div>
@@ -195,6 +198,11 @@ export default function ChefDashboard() {
                   <div>
                     <p className="font-semibold text-gray-800 dark:text-white">Order #{order.id}</p>
                     <p className="text-xs text-gray-500 mt-0.5 capitalize">{order.delivery_type} · {order.time_slot}</p>
+                    {order.delivery_type === 'delivery' && order.delivery_address && (
+                      <p className="text-[10px] font-bold text-blue-500 mt-1 truncate max-w-[150px]">
+                        📍 {order.delivery_address}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-emerald-600">${order.total_price.toFixed(2)}</span>

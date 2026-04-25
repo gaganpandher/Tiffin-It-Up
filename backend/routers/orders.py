@@ -18,6 +18,8 @@ def checkout(
     if "customer" not in current_user.roles.split(","):
         raise HTTPException(status_code=403, detail="Only customers can place orders")
 
+    print(f"DEBUG: Received checkout payload: {payload.model_dump()}")
+
     # Validate all items belong to the stated chef
     subtotal = 0.0
     order_items_data = []
@@ -44,6 +46,7 @@ def checkout(
         discount_applied=discount,
         delivery_type=payload.delivery_type,
         time_slot=payload.time_slot,
+        delivery_address=payload.delivery_address,
     )
     db.add(order)
     db.flush()
@@ -68,7 +71,7 @@ def checkout(
     # Trigger notification to chef in the background
     background_tasks.add_task(
         manager.send_personal_message,
-        {"type": "NEW_ORDER", "order_id": order.id, "customer_name": current_user.full_name},
+        {"type": "NEW_ORDER", "order_id": order.id, "customer_name": current_user.full_name, "delivery_type": order.delivery_type, "delivery_address": order.delivery_address},
         payload.chef_id
     )
 

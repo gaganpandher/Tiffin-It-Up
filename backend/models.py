@@ -123,6 +123,7 @@ class Order(Base):
     total_price = Column(Float, default=0.0)
     delivery_type = Column(String(50))
     time_slot = Column(String(255))
+    delivery_address = Column(Text, nullable=True)
     discount_applied = Column(Float, default=0.0)
     customer = relationship("User", foreign_keys=[customer_id])
     chef = relationship("User", foreign_keys=[chef_id])

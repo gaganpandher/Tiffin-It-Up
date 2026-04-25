@@ -215,7 +215,7 @@ export default function BrowseMeals() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-gray-800 dark:text-gray-200 truncate leading-none mb-1">{meal.chef_name}</p>
                     
-                    {(meal.category === 'meal' || !meal.category) && (
+                    {meal.category === 'meal' && (
                       <div className="flex items-center gap-1.5">
                          <span className="text-[9px] font-black uppercase text-orange-500 tracking-tighter">Heat Level:</span>
                          <div className="flex gap-0.5">

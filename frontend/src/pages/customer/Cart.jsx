@@ -26,6 +26,7 @@ export default function Cart() {
   const { cartItems, cartChefId, removeFromCart, updateQuantity, clearCart, subtotal, discount, total, comboLabel, setComboLabel } = useCart();
   const [deliveryType, setDeliveryType] = useState('delivery');
   const [timeSlot, setTimeSlot] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [chefProfile, setChefProfile] = useState(null);
   const [isPlacing, setIsPlacing] = useState(false);
   const navigate = useNavigate();
@@ -36,9 +37,16 @@ export default function Cart() {
         .then(setChefProfile)
         .catch(console.error);
     }
+    // Fetch customer profile for default address
+    apiRequest('/users/me')
+      .then(u => {
+         if (u.customer_profile?.address) setDeliveryAddress(u.customer_profile.address);
+      })
+      .catch(console.error);
   }, [cartChefId]);
 
   const handleCheckout = async () => {
+    if (deliveryType === 'delivery' && !deliveryAddress.trim()) { alert('Please enter a delivery address.'); return; }
     if (!timeSlot) { alert('Please select a time slot.'); return; }
     if (cartItems.length === 0) { alert('Your cart is empty.'); return; }
     setIsPlacing(true);
@@ -50,6 +58,7 @@ export default function Cart() {
           items: cartItems.map(i => ({ menu_item_id: i.id, quantity: i.quantity, combo_label: comboLabel || null })),
           delivery_type: deliveryType,
           time_slot: timeSlot,
+          delivery_address: deliveryType === 'delivery' ? deliveryAddress : null,
         }),
       });
       clearCart();
@@ -178,6 +187,23 @@ export default function Cart() {
                 </button>
               </div>
             </div>
+
+            {deliveryType === 'delivery' && (
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                <p className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <MapPin size={16} className="text-blue-500" />
+                  Delivery Address
+                </p>
+                <textarea
+                  required
+                  value={deliveryAddress}
+                  onChange={e => setDeliveryAddress(e.target.value)}
+                  placeholder="Street, City, State, ZIP..."
+                  className="w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none dark:text-white text-sm font-medium transition-all resize-none"
+                  rows="2"
+                />
+              </div>
+            )}
 
             <div className="space-y-3">
               <p className="text-sm font-bold text-gray-900 dark:text-white">Arrival Window</p>

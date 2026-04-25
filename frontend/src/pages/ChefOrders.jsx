@@ -54,6 +54,11 @@ export default function ChefOrders() {
                 <div>
                   <h3 className="text-lg font-bold">Order #{order.id}</h3>
                   <p className="text-sm text-gray-500 mt-1">{order.delivery_type.toUpperCase()} • {order.time_slot}</p>
+                  {order.delivery_type === 'delivery' && order.delivery_address && (
+                    <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-lg border border-blue-100 dark:border-blue-800 w-fit">
+                      📍 {order.delivery_address}
+                    </p>
+                  )}
                 </div>
                 <span className={`px-4 py-1 rounded-full text-sm font-bold border capitalize ${getStatusColor(order.status)}`}>
                   {order.status}
