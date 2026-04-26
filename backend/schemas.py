@@ -248,3 +248,11 @@ class MessageOut(MessageCreate):
     sender_name: Optional[str] = None
     class Config:
         from_attributes = True
+
+# ── Admin ───────────────────────────────────────────────────────────────────────
+class AdminStatsOut(BaseModel):
+    total_customers: int
+    total_chefs: int
+    total_orders: int
+    total_revenue: float
+    total_subscriptions: int

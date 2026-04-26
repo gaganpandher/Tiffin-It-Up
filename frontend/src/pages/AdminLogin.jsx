@@ -23,7 +23,7 @@ export default function AdminLogin() {
       });
       
       const payload = parseJwt(res.access_token);
-      if (payload && payload.role === 'admin') {
+      if (payload && payload.roles.split(',').includes('admin')) {
         setAuthToken(res.access_token);
         navigate('/admin/dashboard');
       } else {

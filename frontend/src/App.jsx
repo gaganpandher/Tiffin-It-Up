@@ -4,6 +4,13 @@ import AdminLogin from './pages/AdminLogin';
 import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Admin
+import AdminLayout from './layouts/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminCustomers from './pages/admin/AdminCustomers';
+import AdminChefs from './pages/admin/AdminChefs';
+import AdminSubscriptions from './pages/admin/AdminSubscriptions';
+
 // Chef
 import ChefLayout from './layouts/ChefLayout';
 import ChefDashboard from './pages/ChefDashboard';
@@ -50,6 +57,14 @@ function App() {
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="checkout/subscription" element={<SubscriptionCheckout />} />
           <Route path="profile"       element={<CustomerProfile />} />
+        </Route>
+
+        {/* Protected Admin Routes */}
+        <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminLayout /></ProtectedRoute>}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="customers" element={<AdminCustomers />} />
+          <Route path="chefs" element={<AdminChefs />} />
+          <Route path="subscriptions" element={<AdminSubscriptions />} />
         </Route>
       </Routes>
     </BrowserRouter>
