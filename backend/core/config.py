@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     cloudinary_cloud_name: str = ""
     cloudinary_api_key: str = ""
     cloudinary_api_secret: str = ""
+    
+    # AI Integration
+    groq_api_key: str = ""
 
     class Config:
         env_file = ".env"

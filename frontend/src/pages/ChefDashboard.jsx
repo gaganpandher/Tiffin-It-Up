@@ -6,7 +6,8 @@ import {
   Package,
   Clock,
   DollarSign,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 
 export default function ChefDashboard() {
@@ -19,6 +20,7 @@ export default function ChefDashboard() {
   const [subscribers, setSubscribers] = useState([]);
   const [statsData, setStatsData] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [aiInsight, setAiInsight] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -27,12 +29,14 @@ export default function ChefDashboard() {
       apiRequest('/orders/chef'),
       apiRequest('/chef/subscribers'),
       apiRequest('/chef/stats'),
-    ]).then(([profileData, menuData, orderData, subData, stats]) => {
+      apiRequest('/ai/chef-insights').catch(() => null), // fail silently if not available
+    ]).then(([profileData, menuData, orderData, subData, stats, insightData]) => {
       setProfile(profileData);
       setMenus(menuData);
       setOrders(orderData);
       setSubscribers(subData);
       setStatsData(stats);
+      setAiInsight(insightData);
     }).catch(console.error);
 
     // WebSocket Notifications
@@ -137,6 +141,26 @@ export default function ChefDashboard() {
           </span>
         </div>
       </div>
+
+      {/* AI Kitchen Insights */}
+      {aiInsight && (
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+          <div className="p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl mt-1">
+            <Sparkles className="text-indigo-600 dark:text-indigo-400" size={24} />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-indigo-900 dark:text-indigo-300 text-lg flex items-center gap-2">
+              Kitchen Insights <span className="text-[10px] bg-indigo-200 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full uppercase tracking-wider">AI Powered</span>
+            </h3>
+            <p className="text-indigo-800/80 dark:text-indigo-200/80 font-medium leading-relaxed mt-1">
+              {aiInsight.content}
+            </p>
+            <p className="text-xs text-indigo-400 dark:text-indigo-500/70 mt-3 font-semibold">
+              Generated at: {new Date(aiInsight.generated_at).toLocaleString()}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

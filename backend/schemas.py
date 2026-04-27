@@ -256,3 +256,14 @@ class AdminStatsOut(BaseModel):
     total_orders: int
     total_revenue: float
     total_subscriptions: int
+
+from datetime import datetime
+
+class ChefInsightOut(BaseModel):
+    id: int
+    chef_id: int
+    content: str
+    generated_at: datetime
+    class Config:
+        from_attributes = True
+

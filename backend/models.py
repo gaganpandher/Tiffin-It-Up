@@ -168,3 +168,9 @@ class Message(Base):
     sender = relationship("User", foreign_keys=[sender_id])
     receiver = relationship("User", foreign_keys=[receiver_id])
 
+class ChefInsight(Base):
+    __tablename__ = "chef_insights"
+    id = Column(Integer, primary_key=True, index=True)
+    chef_id = Column(Integer, ForeignKey("users.id"), unique=True, index=True)
+    content = Column(Text)
+    generated_at = Column(DateTime, default=func.now())

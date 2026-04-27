@@ -9,15 +9,18 @@ import {
   Flame, 
   Truck, 
   ShoppingBag,
-  Info
+  Info,
+  Sparkles
 } from 'lucide-react';
 
 const SPICE_LABELS = ['', 'Mild', 'Low', 'Medium', 'Hot', 'Extreme'];
 
 export default function BrowseMeals() {
   const [meals, setMeals] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [filters, setFilters] = useState({ search: '', is_veg: '', delivery_available: '', max_price: '', spice_level: '' });
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRecs, setIsLoadingRecs] = useState(true);
   const [toast, setToast] = useState(null);
   const { addToCart } = useCart();
   
@@ -31,6 +34,14 @@ export default function BrowseMeals() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => { loadMeals(); }, [filters]);
+
+  useEffect(() => {
+    setIsLoadingRecs(true);
+    apiRequest('/ai/recommendations')
+      .then(setRecommendations)
+      .catch(err => console.error("Failed to fetch recommendations:", err))
+      .finally(() => setIsLoadingRecs(false));
+  }, []);
 
   const loadMeals = async () => {
     setIsLoading(true);
@@ -99,6 +110,51 @@ export default function BrowseMeals() {
       {toast && (
         <div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl font-bold text-sm transition-all animate-in fade-in slide-in-from-right-4 ${toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
           {toast.text}
+        </div>
+      )}
+
+      {/* AI Recommendations */}
+      {!isLoadingRecs && recommendations.length > 0 && (
+        <div className="mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg shadow-purple-500/20">
+              <Sparkles className="text-white" size={24} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">Recommended for You</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Personalized picks based on your taste & history.</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recommendations.map(meal => (
+              <div key={`rec-${meal.id}`} className="bg-white dark:bg-gray-900 rounded-[2rem] border-2 border-purple-100 dark:border-purple-900/30 overflow-hidden shadow-xl shadow-purple-900/5 relative group transition-transform hover:-translate-y-1">
+                <div className="absolute top-4 left-4 z-10 bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                  Top Match
+                </div>
+                {meal.image_url ? (
+                  <img src={meal.image_url} alt={meal.name} className="w-full h-40 object-cover" />
+                ) : (
+                  <div className="w-full h-40 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 flex items-center justify-center">
+                    <ShoppingBag className="text-purple-200 dark:text-gray-600" size={40} />
+                  </div>
+                )}
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-1">{meal.name}</h3>
+                    <span className="font-black text-lg text-purple-600 dark:text-purple-400">${meal.price.toFixed(2)}</span>
+                  </div>
+                  <p className="text-sm text-gray-500 line-clamp-2 min-h-[40px] mb-4">{meal.description || 'A delicious recommendation.'}</p>
+                  <button
+                    onClick={() => handleAddToCart(meal)}
+                    className="w-full py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 dark:text-purple-300 font-bold rounded-xl transition-colors"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

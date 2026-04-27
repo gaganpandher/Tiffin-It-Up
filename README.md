@@ -25,6 +25,14 @@ The Chef Dashboard provides a unified financial view, aggregating income from tw
 - **Asynchronous Notifications**: Order confirmations use FastAPI `BackgroundTasks` to prevent "Fail to Fetch" errors and ensure the UI remains responsive during chef alerts.
 - **Robust Serialization**: Multi-table data hydration ensures deep order details (items, prices, combo labels) are accurately preserved in the order history.
 
+### 5. AI-Powered Intelligence
+- **Personalized Customer Recommendations**: Leverages the Groq Cloud API (Llama 3) to analyze a customer's order history, stated allergies, and spice preferences to dynamically recommend highly relevant meals.
+- **Chef Business Insights**: Employs native asynchronous background tasks to pre-aggregate sales and subscription data, passing minimal context to the LLM to generate actionable, cached kitchen insights without hitting token limits.
+
+### 6. Admin Control Center
+- **System Oversight**: Dedicated `/admin` portal secured by JWT role verification.
+- **Data Management**: Real-time dashboards monitoring total platform revenue, active subscriptions, and user health across the entire ecosystem.
+
 ---
 
 ## 🛠 Tech Stack
@@ -39,6 +47,7 @@ The Chef Dashboard provides a unified financial view, aggregating income from tw
 - **Framework**: FastAPI (Python 3.10+)
 - **Database**: SQLAlchemy (SQLite for Dev / PostgreSQL for Prod)
 - **Security**: JWT Role-Based Access Control & Bcrypt Hashing
+- **AI Integration**: Groq Cloud SDK (Llama 3)
 - **Notifications**: Real-time WebSocket support for order alerts
 
 ---
@@ -80,7 +89,7 @@ npm run dev
 ```
 
 ### 3. Environment Variables
-- **Backend**: Configure `CLOUDINARY_URL` and `SECRET_KEY` in `.env`.
+- **Backend**: Configure `GROQ_API_KEY`, `CLOUDINARY_URL`, and `SECRET_KEY` in `.env`.
 - **Frontend**: Set `VITE_API_URL=http://localhost:8000` in `.env`.
 
 ---
