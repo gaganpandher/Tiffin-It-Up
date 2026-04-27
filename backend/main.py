@@ -9,7 +9,8 @@ app = FastAPI(title="Tiffin System API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):517\d", # Matches 5170-5179
+    allow_origins=["https://tiffin-it-up.vercel.app"],
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+", # Matches any local port for dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
